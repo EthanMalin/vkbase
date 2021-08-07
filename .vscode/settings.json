@@ -1,7 +1,0 @@
-{
-  "C_Cpp.default.includePath": ["/Users/ethanmalin/dev/sdks/vulkan/MoltenVK/include", "/Users/ethanmalin/dev/vkbase/dist/include"],
-  "terminal.integrated.automationShell.linux": "",
-  "files.associations": {
-    "vkbase.h": "c"
-  }
-}

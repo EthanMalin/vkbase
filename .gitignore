@@ -1,0 +1,6 @@
+.DS_Store
+.vscode
+build
+.sconsign.dblite
+dist
+libvkbase.a
