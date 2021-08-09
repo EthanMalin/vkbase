@@ -32,26 +32,12 @@ typedef struct QueueFamilyIndices {
   VkBool32 hasPresent;
 } QueueFamilyIndices;
 
-typedef struct Swapchain {
-  VkSwapchainKHR chain;
-  uint32_t imageCount;
-  VkFormat format;
-  VkExtent2D extent;
-  VkImage images[MAX_SWAPCHAIN_IMAGES];
-  VkImageView views[MAX_SWAPCHAIN_IMAGES];
-} Swapchain;
-
 typedef struct Device {
+  VkPhysicalDevice physical;
   VkDevice logical;
   VkQueue queue;
   uint32_t queueFamilyIndex;
 } Device;
-
-typedef struct Texture {
-  VkImage image;
-  VkImageView view;
-  VkDeviceMemory memory;
-} Texture;
 
 typedef struct Buffer {
   VkBuffer buffer;
@@ -63,6 +49,15 @@ typedef struct Image {
   VkImage image;
   VkDeviceMemory memory;
 } Image;
+
+typedef struct Swapchain {
+  VkSwapchainKHR chain;
+  uint32_t imageCount;
+  VkFormat format;
+  VkExtent2D extent;
+  VkImage images[MAX_SWAPCHAIN_IMAGES];
+  VkImageView views[MAX_SWAPCHAIN_IMAGES];
+} Swapchain;
 
 typedef struct SwapchainSupportDetails {
   uint32_t numFormats;
@@ -161,32 +156,16 @@ extern VkPipelineDepthStencilStateCreateInfo simpleDepthStencilState(VkBool32 de
 extern VkPipelineColorBlendStateCreateInfo simpleColorBlendState(const VkPipelineColorBlendAttachmentState *pAttachment, float *blendConstants);
 extern VkPipelineDynamicStateCreateInfo simpleDynamicState(uint32_t dynamicStateCount, const VkDynamicState *pDynamicStates);
 
-/* vkinfo.c */
-
 /* vkutil.c */
-//extern VkResult createSwapchain(VkPhysicalDevice physicalDevice, Device device, VkSurfaceKHR surface, GLFWwindow *window, Swapchain *swapchain);
-//extern VkResult createDevice(VkInstance instance, VkPhysicalDevice physicalDevice, Device *device);
-//extern VkResult createBuffer(VkPhysicalDevice physicalDevice, Device device, VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, Buffer *buffer);
-extern VkResult createTexture(VkPhysicalDevice physicalDevice,
-                            Device device,
-                            VkFormat format,
-                            VkExtent2D size,
-                            VkImageUsageFlags usage,
-                            VkMemoryPropertyFlags properties,
-                            VkImageAspectFlags aspects,
-                            Texture *texture);
-//extern void destroyBuffer(Device device, Buffer buffer);
-extern void destroyTexture(Device device, Texture texture);
-//extern void destroyDevice(VkInstance instance, Device device);
-//extern void destroySwapchain(Device device, Swapchain swapchain);
-
 extern size_t readFile(char *filename, char *buffer);
 
 extern int32_t getQueueFamilyIndex(VkPhysicalDevice physicalDevice, VkQueueFlagBits queueSupport);
 extern void getQueueFamilyIndices(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface, QueueFamilyIndices *qfi);
-extern VkBool32 checkDeviceExtensionSupport(VkPhysicalDevice physicalDevice);
+
+extern VkBool32 checkDeviceSupportsExtensions(VkPhysicalDevice physicalDevice);
 extern VkBool32 isPhysicalDeviceSuitable(VkPhysicalDevice physicalDevice);
 extern VkResult pickPhysicalDevice(VkInstance instance, VkPhysicalDevice *physicalDevice);
+
 extern int32_t findMemoryTypeIndex(VkPhysicalDevice physicalDevice, uint32_t typeFilter, VkMemoryPropertyFlags properties);
 
 /* vkswap.c */
