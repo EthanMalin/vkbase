@@ -23,22 +23,6 @@
 #define MAX_SWAPCHAIN_PRESENT_MODES 4
 
 /* --- data types ---  */
-typedef struct QueueFamilyIndices {
-  uint32_t graphicsIndex;
-  uint32_t computeIndex;
-  uint32_t presentIndex;
-  VkBool32 hasGraphics;
-  VkBool32 hasCompute;
-  VkBool32 hasPresent;
-} QueueFamilyIndices;
-
-typedef struct Device {
-  VkPhysicalDevice physical;
-  VkDevice logical;
-  VkQueue queue;
-  uint32_t queueFamilyIndex;
-} Device;
-
 typedef struct Buffer {
   VkBuffer buffer;
   VkDeviceMemory memory;
@@ -50,14 +34,14 @@ typedef struct Image {
   VkDeviceMemory memory;
 } Image;
 
-typedef struct Swapchain {
-  VkSwapchainKHR chain;
-  uint32_t imageCount;
-  VkFormat format;
-  VkExtent2D extent;
-  VkImage images[MAX_SWAPCHAIN_IMAGES];
-  VkImageView views[MAX_SWAPCHAIN_IMAGES];
-} Swapchain;
+typedef struct QueueFamilyIndices {
+  uint32_t graphicsIndex;
+  uint32_t computeIndex;
+  uint32_t presentIndex;
+  VkBool32 hasGraphics;
+  VkBool32 hasCompute;
+  VkBool32 hasPresent;
+} QueueFamilyIndices;
 
 typedef struct SwapchainSupportDetails {
   uint32_t numFormats;
@@ -68,6 +52,22 @@ typedef struct SwapchainSupportDetails {
   VkPresentModeKHR presentModes[MAX_SWAPCHAIN_PRESENT_MODES];
 } SwapchainSupportDetails;
 
+typedef struct Swapchain {
+  VkSwapchainKHR chain;
+  uint32_t imageCount;
+  VkFormat format;
+  VkExtent2D extent;
+  VkImage images[MAX_SWAPCHAIN_IMAGES];
+  VkImageView views[MAX_SWAPCHAIN_IMAGES];
+} Swapchain;
+
+typedef struct VkBase {
+  VkInstance instance;
+  VkPhysicalDevice physical;
+  VkDevice logical;  
+  VkQueue queueGraphics;
+  QueueFamilyIndices queueFamilyIndices;
+} VkBase;
 
 /* --- variables --- */
 #define NUM_INSTANCE_LAYERS_DEBUG 1
