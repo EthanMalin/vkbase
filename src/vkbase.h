@@ -13,7 +13,7 @@
   VkResult err = (f);						        \
   if (err)							                \
     {								                    \
-      printf("VULKAN_ERROR: %d", err);	\
+      printf("VULKAN_ERROR: %d : file(%s) : line(%d)\n", err, __FILE__, __LINE__);	\
       return err;						            \
     }								                    \
   }								                      \
@@ -26,7 +26,6 @@
 typedef struct Buffer {
   VkBuffer buffer;
   VkDeviceMemory memory;
-  void *ptr;
 } Buffer;
 
 typedef struct Image {
@@ -65,7 +64,7 @@ typedef struct VkBase {
   VkInstance instance;
   VkPhysicalDevice physical;
   VkDevice logical;  
-  VkQueue queueGraphics;
+  VkQueue queue;
   QueueFamilyIndices queueFamilyIndices;
 } VkBase;
 
@@ -98,63 +97,76 @@ static const char *const s_deviceExtensions[] = {
 };
 
 /* --- prototypes --- */
+/* vkresource.c */
+extern VkResult vkb_createBuffer(VkPhysicalDevice pd, VkDevice d, VkBufferCreateInfo *info, VkMemoryPropertyFlags memProps, Buffer *out);
+extern VkResult vkb_createImage(VkPhysicalDevice pd, VkDevice d, VkImageCreateInfo *info, VkMemoryPropertyFlags memProps, Image *out);
+extern void vkb_destroyBuffer(VkDevice d, Buffer buffer);
+extern void vkb_destroyImage(VkDevice d, Image image);
+
 /* vkempties.c */
-extern const VkInstanceCreateInfo *const emptyInstance();
-extern const VkApplicationInfo *const emptyApplication();
-extern const VkDeviceQueueCreateInfo *const emptyDeviceQueue();
-extern const VkDeviceCreateInfo *const emptyDevice();
-extern const VkCommandPoolCreateInfo *const emptyCommandPool();
-extern const VkCommandBufferAllocateInfo *const emptyCommandBuffer();
-extern const VkSubmitInfo *const emptySubmit();
-extern const VkFenceCreateInfo *const emptyFence();
-extern const VkSemaphoreCreateInfo *const emptySemaphore();
+extern const VkInstanceCreateInfo *const vkb_emptyInstance();
+extern const VkApplicationInfo *const vkb_emptyApplication();
+extern const VkDeviceQueueCreateInfo *const vkb_emptyDeviceQueue();
+extern const VkDeviceCreateInfo *const vkb_emptyDevice();
+extern const VkCommandPoolCreateInfo *const vkb_emptyCommandPool();
+extern const VkCommandBufferAllocateInfo *const vkb_emptyCommandBuffer();
+extern const VkSubmitInfo *const vkb_emptySubmit();
+extern const VkFenceCreateInfo *const vkb_emptyFence();
+extern const VkSemaphoreCreateInfo *const vkb_emptySemaphore();
 
-extern const VkRenderPassCreateInfo *const emptyRenderPass();
+extern const VkRenderPassCreateInfo *const vkb_emptyRenderPass();
+extern const VkFramebufferCreateInfo *const vkb_emptyFramebuffer();
 
-extern const VkMemoryAllocateInfo *const emptyMemory();
-extern const VkBufferCreateInfo *const emptyBuffer();
-extern const VkBufferViewCreateInfo *const emptyBufferView();
-extern const VkImageCreateInfo *const emptyImage();
-extern const VkImageViewCreateInfo *const emptyImageView();
+extern const VkMemoryAllocateInfo *const vkb_emptyMemory();
+extern const VkBufferCreateInfo *const vkb_emptyBuffer();
+extern const VkBufferViewCreateInfo *const vkb_emptyBufferView();
+extern const VkImageCreateInfo *const vkb_emptyImage();
+extern const VkImageViewCreateInfo *const vkb_emptyImageView();
+extern const VkSamplerCreateInfo *const vkb_emptySampler();
 
-extern const VkDescriptorSetLayoutCreateInfo *const emptyDescriptorSetLayout();
-extern const VkPipelineLayoutCreateInfo *const emptyPipelineLayout();
-extern const VkDescriptorPoolCreateInfo *const emptyDescriptorPool();
-extern const VkDescriptorSetAllocateInfo *const emptyDescriptorSet();
+extern const VkDescriptorSetLayoutCreateInfo *const vkb_emptyDescriptorSetLayout();
+extern const VkPipelineLayoutCreateInfo *const vkb_emptyPipelineLayout();
+extern const VkDescriptorPoolCreateInfo *const vkb_emptyDescriptorPool();
+extern const VkDescriptorSetAllocateInfo *const vkb_emptyDescriptorSet();
 
-extern const VkShaderModuleCreateInfo *const emptyShaderModule();
-extern const VkPipelineShaderStageCreateInfo *const emptyShaderStage();
-extern const VkPipelineVertexInputStateCreateInfo *const emptyVertexInputState();
-extern const VkPipelineInputAssemblyStateCreateInfo *const emptyInputAssemblyState();
-extern const VkPipelineTessellationStateCreateInfo *const emptyTessellationState();
-extern const VkPipelineViewportStateCreateInfo *const emptyViewportState();
-extern const VkPipelineRasterizationStateCreateInfo *const emptyRasterizationState();
-extern const VkPipelineMultisampleStateCreateInfo *const emptyMultisampleState();
-extern const VkPipelineDepthStencilStateCreateInfo *const emptyDepthStencilState();
-extern const VkPipelineColorBlendStateCreateInfo *const emptyColorBlendState();
-extern const VkPipelineDynamicStateCreateInfo *const emptyDynamicState();
-extern const VkGraphicsPipelineCreateInfo *const emptyGraphicsPipeline();
+extern const VkShaderModuleCreateInfo *const vkb_emptyShaderModule();
+extern const VkPipelineShaderStageCreateInfo *const vkb_emptyShaderStage();
+extern const VkPipelineVertexInputStateCreateInfo *const vkb_emptyVertexInputState();
+extern const VkPipelineInputAssemblyStateCreateInfo *const vkb_emptyInputAssemblyState();
+extern const VkPipelineTessellationStateCreateInfo *const vkb_emptyTessellationState();
+extern const VkPipelineViewportStateCreateInfo *const vkb_emptyViewportState();
+extern const VkPipelineRasterizationStateCreateInfo *const vkb_emptyRasterizationState();
+extern const VkPipelineMultisampleStateCreateInfo *const vkb_emptyMultisampleState();
+extern const VkPipelineDepthStencilStateCreateInfo *const vkb_emptyDepthStencilState();
+extern const VkPipelineColorBlendStateCreateInfo *const vkb_emptyColorBlendState();
+extern const VkPipelineDynamicStateCreateInfo *const vkb_emptyDynamicState();
+extern const VkGraphicsPipelineCreateInfo *const vkb_emptyGraphicsPipeline();
 
-extern const VkSwapchainCreateInfoKHR *const emptySwapchain();
-extern const VkPresentInfoKHR *const emptyPresent();
+extern const VkSwapchainCreateInfoKHR *const vkb_emptySwapchain();
+extern const VkPresentInfoKHR *const vkb_emptyPresent();
 
-extern const VkWriteDescriptorSet *const emptyWriteDescriptorSet();
-extern const VkCopyDescriptorSet *const emptyCopyDescriptorSet();
+extern const VkWriteDescriptorSet *const vkb_emptyWriteDescriptorSet();
+extern const VkCopyDescriptorSet *const vkb_emptyCopyDescriptorSet();
+
+extern const VkCommandBufferBeginInfo *const vkb_emptyCommandBufferBegin();
+extern const VkRenderPassBeginInfo *const vkb_emptyRenderPassBegin();
 
 /* vksimple.c */
-extern VkInstanceCreateInfo simpleInstance(VkApplicationInfo *pApplicationInfo, VkBool32 debug);
-extern VkDeviceCreateInfo simpleDevice(uint32_t queueCreateInfoCount, VkDeviceQueueCreateInfo *pQueueCreateInfos);
-extern VkShaderModuleCreateInfo simpleShaderModule(size_t codeSize, const uint32_t *pCode);
-extern VkPipelineShaderStageCreateInfo simpleShaderStage(VkShaderStageFlagBits stage, VkShaderModule module);
-extern VkPipelineVertexInputStateCreateInfo simpleVertexInputState(uint32_t bindingCount, const VkVertexInputBindingDescription *pBindings, uint32_t attribCount, const VkVertexInputAttributeDescription *pAttribs);
-extern VkPipelineInputAssemblyStateCreateInfo simpleInputAssemblyState(VkPrimitiveTopology topology, VkBool32 primitiveRestartEnable);
-extern VkPipelineTessellationStateCreateInfo simpleTessellationState(uint32_t patchControlPoints);
-extern VkPipelineViewportStateCreateInfo simpleViewportState(const VkViewport *pViewport, const VkRect2D *pScissor); 
-extern VkPipelineRasterizationStateCreateInfo simpleRasterizationState(VkPolygonMode polygonMode, VkCullModeFlags cullMode, VkFrontFace frontFace);
-extern VkPipelineMultisampleStateCreateInfo simpleMultisampleState(VkSampleCountFlagBits sample);
-extern VkPipelineDepthStencilStateCreateInfo simpleDepthStencilState(VkBool32 depthWriteEnable, VkCompareOp depthCompareOp);
-extern VkPipelineColorBlendStateCreateInfo simpleColorBlendState(const VkPipelineColorBlendAttachmentState *pAttachment, float *blendConstants);
-extern VkPipelineDynamicStateCreateInfo simpleDynamicState(uint32_t dynamicStateCount, const VkDynamicState *pDynamicStates);
+extern VkInstanceCreateInfo vkb_simpleInstance(VkApplicationInfo *pApplicationInfo, VkBool32 debug);
+extern VkDeviceCreateInfo vkb_simpleDevice(uint32_t queueCreateInfoCount, VkDeviceQueueCreateInfo *pQueueCreateInfos);
+extern VkShaderModuleCreateInfo vkb_simpleShaderModule(size_t codeSize, const uint32_t *pCode);
+extern VkPipelineShaderStageCreateInfo vkb_simpleShaderStage(VkShaderStageFlagBits stage, VkShaderModule module);
+extern VkPipelineVertexInputStateCreateInfo vkb_simpleVertexInputState(uint32_t bindingCount, const VkVertexInputBindingDescription *pBindings, uint32_t attribCount, const VkVertexInputAttributeDescription *pAttribs);
+extern VkPipelineInputAssemblyStateCreateInfo vkb_simpleInputAssemblyState(VkPrimitiveTopology topology, VkBool32 primitiveRestartEnable);
+extern VkPipelineTessellationStateCreateInfo vkb_simpleTessellationState(uint32_t patchControlPoints);
+extern VkPipelineViewportStateCreateInfo vkb_simpleViewportState(const VkViewport *pViewport, const VkRect2D *pScissor); 
+extern VkPipelineRasterizationStateCreateInfo vkb_simpleRasterizationState(VkPolygonMode polygonMode, VkCullModeFlags cullMode, VkFrontFace frontFace);
+extern VkPipelineMultisampleStateCreateInfo vkb_simpleMultisampleState(VkSampleCountFlagBits sample);
+extern VkPipelineDepthStencilStateCreateInfo vkb_simpleDepthStencilState(VkBool32 depthWriteEnable, VkCompareOp depthCompareOp);
+extern VkPipelineColorBlendStateCreateInfo vkb_simpleColorBlendState(const VkPipelineColorBlendAttachmentState *pAttachment, float *blendConstants);
+extern VkPipelineDynamicStateCreateInfo vkb_simpleDynamicState(uint32_t dynamicStateCount, const VkDynamicState *pDynamicStates);
+extern VkRenderPassCreateInfo vkb_simpleRenderPass(uint32_t attachmentCount, VkAttachmentDescription const *pAttachments, uint32_t subpassCount, VkSubpassDescription const *pSubpasses, uint32_t dependencyCount, VkSubpassDependency const *pDependencies);
+extern VkFramebufferCreateInfo vkb_simpleFramebuffer(VkRenderPass renderPass, uint32_t attachmentCount, const VkImageView *pAttachments, uint32_t width, uint32_t height, uint32_t layers);
 
 /* vkutil.c */
 extern size_t readFile(char *filename, char *buffer);
