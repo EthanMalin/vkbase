@@ -1,0 +1,15 @@
+import os
+
+Import("env")
+
+env.Append(LIBPATH=[
+    os.path.join(env['DEVROOT'], 'libs', 'glfw-3.3.2.bin.WIN64', 'lib-mingw-w64'),
+    os.path.join(env['DEVROOT'], 'vulkan', '1.2.135.0', 'Lib')
+])
+
+env.Append(CPPPATH=[
+    os.path.join(env['DEVROOT'], "libs", "glfw-3.3.2.bin.WIN64", "include"),
+    os.path.join(env['DEVROOT'], 'vulkan', '1.2.135.0', 'Include')
+])
+
+Return("env")

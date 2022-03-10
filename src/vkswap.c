@@ -2,10 +2,10 @@
 
 static VkSurfaceFormatKHR chooseSwapchainSurfaceFormat(uint32_t numFormats, VkSurfaceFormatKHR *formats);
 static VkPresentModeKHR chooseSwapchainPresentMode(uint32_t numPresentModes, VkPresentModeKHR *modes);
-static VkExtent2D chooseSwapchainExtent(GLFWwindow *window, VkSurfaceCapabilitiesKHR capabilities);
+static VkExtent2D chooseSwapchainExtent(VkExtent2D window, VkSurfaceCapabilitiesKHR capabilities);
 
-VkSwapchainCreateInfoKHR swapchainInfo(VkPhysicalDevice physicalDevice, uint32_t queueFamilyIndex, VkSurfaceKHR surface, GLFWwindow *window) {
-  SwapchainSupportDetails details = querySwapchainSupportDetails(physicalDevice, queueFamilyIndex, surface);
+VkSwapchainCreateInfoKHR vkb_swapchainCreateInfo(VkPhysicalDevice physicalDevice, uint32_t queueFamilyIndex, VkSurfaceKHR surface, VkExtent2D window) {
+  SwapchainSupportDetails details = vkb_swapchainSupportDetails(physicalDevice, queueFamilyIndex, surface);
   VkSurfaceFormatKHR format = chooseSwapchainSurfaceFormat(details.numFormats, details.formats);
   VkPresentModeKHR presentMode = chooseSwapchainPresentMode(details.numPresentModes, details.presentModes);
   VkExtent2D extent = chooseSwapchainExtent(window, details.capabilities);
@@ -31,7 +31,7 @@ VkSwapchainCreateInfoKHR swapchainInfo(VkPhysicalDevice physicalDevice, uint32_t
   return info;
 }
 
-SwapchainSupportDetails querySwapchainSupportDetails(VkPhysicalDevice physicalDevice, uint32_t queueFamilyIndex, VkSurfaceKHR surface) {
+SwapchainSupportDetails vkb_swapchainSupportDetails(VkPhysicalDevice physicalDevice, uint32_t queueFamilyIndex, VkSurfaceKHR surface) {
   SwapchainSupportDetails details = {0};
   vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physicalDevice, surface, &details.capabilities);
   vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, surface, &details.numFormats, NULL);
@@ -66,17 +66,15 @@ VkPresentModeKHR chooseSwapchainPresentMode(uint32_t numPresentModes, VkPresentM
   return VK_PRESENT_MODE_FIFO_KHR;
 }
 
-VkExtent2D chooseSwapchainExtent(GLFWwindow *window, VkSurfaceCapabilitiesKHR capabilities) {
+VkExtent2D chooseSwapchainExtent(VkExtent2D window, VkSurfaceCapabilitiesKHR capabilities) {
   int width, height;
   VkExtent2D extent;
 
   if (capabilities.currentExtent.width != UINT32_MAX) {
     extent = capabilities.currentExtent;
   } else {
-    glfwGetFramebufferSize(window, &width, &height);
-    extent.width = (uint32_t)(width);
-    extent.height = (uint32_t)(height);
-
+	extent.width = window.width;
+	extent.height = window.height;
     #define MAX(x, y) (((x) > (y)) ? (x) : (y))
     #define MIN(x, y) (((x) < (y)) ? (x) : (y))
     extent.width = MAX(capabilities.minImageExtent.width, MIN(capabilities.maxImageExtent.width, extent.width));

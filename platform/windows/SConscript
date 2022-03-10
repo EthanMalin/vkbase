@@ -1,0 +1,7 @@
+import os
+
+Import("env")
+
+env['VULKAN'] = os.path.abspath(os.path.join(env['ROOT'], '..', '..', 'vulkan'))
+
+Return("env")

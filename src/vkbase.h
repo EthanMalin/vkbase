@@ -1,13 +1,12 @@
 #ifndef VK_BASE_H
 #define VK_BASE_H
 
+#include <vulkan/vulkan.h>
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdint.h>
 #include <string.h>
-
-#define GLFW_INCLUDE_VULKAN
-#include <GLFW/glfw3.h>
 
 #define VK_CHECK(f) {					          \
   VkResult err = (f);						        \
@@ -75,6 +74,7 @@ static const char *const s_instanceLayersDebug[] = {
     "VK_LAYER_KHRONOS_validation"
 };
 
+#ifdef __APPLE__
 #define NUM_INSTANCE_EXTENSIONS_DEBUG 3
 #define INSTANCE_EXTENSIONS_DEBUG s_instanceExtensionsDebug
 static const char *const s_instanceExtensionsDebug[] = {
@@ -89,6 +89,22 @@ static const char *const s_instanceExtensions[] = {
   "VK_KHR_surface",
   "VK_EXT_metal_surface"
 };
+#endif
+
+#ifdef _WIN32
+#define NUM_INSTANCE_EXTENSIONS_DEBUG 2
+#define INSTANCE_EXTENSIONS_DEBUG s_instanceExtensionsDebug
+static const char *const s_instanceExtensionsDebug[] = {
+  VK_EXT_DEBUG_UTILS_EXTENSION_NAME,
+  "VK_KHR_surface",
+};
+
+#define NUM_INSTANCE_EXTENSIONS 1
+#define INSTANCE_EXTENSIONS s_instanceExtensions
+static const char *const s_instanceExtensions[] = {
+  "VK_KHR_surface",
+};
+#endif
 
 #define NUM_DEVICE_EXTENSIONS 1
 #define DEVICE_EXTENSIONS s_deviceExtensions
@@ -180,11 +196,10 @@ extern VkResult pickPhysicalDevice(VkInstance instance, VkPhysicalDevice *physic
 
 extern int32_t findMemoryTypeIndex(VkPhysicalDevice physicalDevice, uint32_t typeFilter, VkMemoryPropertyFlags properties);
 
-/* vkswap.c */
-extern VkSwapchainCreateInfoKHR swapchainInfo(VkPhysicalDevice physicalDevice, uint32_t queueFamilyIndex, VkSurfaceKHR surface, GLFWwindow *window);
-extern SwapchainSupportDetails querySwapchainSupportDetails(VkPhysicalDevice physicalDevice, uint32_t queueFamilyIndex, VkSurfaceKHR surface);
-
 /* vkcmd.c */
 extern void cmdTransitionImageLayout(VkCommandBuffer commandBuffer, VkImage image, VkImageLayout oldLayout, VkImageLayout newLayout);
 
+/* vkswap.c */
+extern SwapchainSupportDetails vkb_swapchainSupportDetails(VkPhysicalDevice physicalDevice, uint32_t queueFamilyIndex, VkSurfaceKHR surface);
+extern VkSwapchainCreateInfoKHR vkb_swapchainCreateInfo(VkPhysicalDevice physicalDevice, uint32_t queueFamilyIndex, VkSurfaceKHR surface, VkExtent2D window);
 #endif /* VK_BASE_H */
