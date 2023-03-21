@@ -29,14 +29,14 @@ env.Append(CPPPATH=[
 ])
 
 # glob source code
-source = env.Glob(os.path.join(env['SRC'], '*.c'))
+sources = env.Glob(os.path.join(env['SRC'], '*.c'))
 headers = env.Glob(os.path.join(env['SRC'], '*.h'))
 
 # compile object files
 objs = []
-for s in source:
-  name, _ = os.path.splitext(os.path.split(str(s))[1])
-  objs.append(env.Object(os.path.join(env['OBJ'], name + '.o'), s))
+for source in sources:
+  name, _ = os.path.splitext(os.path.split(str(source))[1])
+  objs.append(env.Object(os.path.join(env['OBJ'], name + '.o'), source))
 
 # compile library
 lib = env.Library(os.path.join(env['LIB'], 'vkbase'), objs, LIBS=['vulkan'])
