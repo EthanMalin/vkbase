@@ -5,14 +5,14 @@ VkInstanceCreateInfo vkb_simpleInstance(VkApplicationInfo *pApplicationInfo, VkB
 
   infoInstance.pApplicationInfo = pApplicationInfo;
   if (debug) {
-    infoInstance.enabledLayerCount = NUM_INSTANCE_LAYERS_DEBUG;
+    infoInstance.enabledLayerCount = VKB_NUM_INSTANCE_LAYERS_DEBUG;
     infoInstance.ppEnabledLayerNames = s_instanceLayersDebug;
-    infoInstance.enabledExtensionCount = NUM_INSTANCE_EXTENSIONS_DEBUG;
+    infoInstance.enabledExtensionCount = VKB_NUM_INSTANCE_EXTENSIONS_DEBUG;
     infoInstance.ppEnabledExtensionNames = s_instanceExtensionsDebug;
   } else {
     infoInstance.enabledLayerCount = 0;
     infoInstance.ppEnabledLayerNames = NULL;
-    infoInstance.enabledExtensionCount = NUM_INSTANCE_EXTENSIONS;
+    infoInstance.enabledExtensionCount = VKB_NUM_INSTANCE_EXTENSIONS;
     infoInstance.ppEnabledExtensionNames = s_instanceExtensions;
   }
 
@@ -26,8 +26,8 @@ VkDeviceCreateInfo vkb_simpleDevice(uint32_t queueCreateInfoCount, VkDeviceQueue
   info.pQueueCreateInfos = pQueueCreateInfos;
   info.enabledLayerCount = 0;
   info.ppEnabledLayerNames = NULL;
-  info.enabledExtensionCount = NUM_DEVICE_EXTENSIONS;
-  info.ppEnabledExtensionNames = DEVICE_EXTENSIONS;
+  info.enabledExtensionCount = VKB_NUM_DEVICE_EXTENSIONS;
+  info.ppEnabledExtensionNames = VKB_DEVICE_EXTENSIONS;
   info.pEnabledFeatures = NULL;
 
   return info;

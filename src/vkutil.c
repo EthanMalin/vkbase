@@ -34,7 +34,7 @@ int32_t getQueueFamilyIndex(VkPhysicalDevice physicalDevice, VkQueueFlagBits que
   return -1;
 }
 
-void getQueueFamilyIndices(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface, QueueFamilyIndices *qfi) {
+void getQueueFamilyIndices(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface, VkbQueueFamilyIndices *qfi) {
   uint32_t queueFamilyCount = 16;
   VkQueueFamilyProperties queueProperties[16];
   VkBool32 presentSupport = VK_FALSE;
@@ -90,7 +90,7 @@ VkBool32 checkDeviceSupportsExtensions(VkPhysicalDevice physicalDevice) {
   availableExtensions = malloc(extensionCount * sizeof(VkExtensionProperties));
   vkEnumerateDeviceExtensionProperties(physicalDevice, NULL, &extensionCount, availableExtensions);
 
-  for (uint32_t i = 0; i < NUM_DEVICE_EXTENSIONS; i++) {
+  for (uint32_t i = 0; i < VKB_NUM_DEVICE_EXTENSIONS; i++) {
     extensionSupported = VK_FALSE;
     for (uint32_t j = 0; j < extensionCount; j++) {
       if (0 == strcmp(availableExtensions[j].extensionName, s_deviceExtensions[i])) {

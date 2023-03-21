@@ -1,20 +1,20 @@
 #include "vkbase.h"
 
-static VkSurfaceFormatKHR chooseSwapchainSurfaceFormat(uint32_t numFormats, VkSurfaceFormatKHR *formats);
-static VkPresentModeKHR chooseSwapchainPresentMode(uint32_t numPresentModes, VkPresentModeKHR *modes);
-static VkExtent2D chooseSwapchainExtent(VkExtent2D window, VkSurfaceCapabilitiesKHR capabilities);
+static VkSurfaceFormatKHR s_chooseSwapchainSurfaceFormat(uint32_t numFormats, VkSurfaceFormatKHR *formats);
+static VkPresentModeKHR s_chooseSwapchainPresentMode(uint32_t numPresentModes, VkPresentModeKHR *modes);
+static VkExtent2D s_chooseSwapchainExtent(VkExtent2D window, VkSurfaceCapabilitiesKHR capabilities);
 
 VkSwapchainCreateInfoKHR vkb_swapchainCreateInfo(VkPhysicalDevice physicalDevice, uint32_t queueFamilyIndex, VkSurfaceKHR surface, VkExtent2D window) {
-  SwapchainSupportDetails details = vkb_swapchainSupportDetails(physicalDevice, queueFamilyIndex, surface);
-  VkSurfaceFormatKHR format = chooseSwapchainSurfaceFormat(details.numFormats, details.formats);
-  VkPresentModeKHR presentMode = chooseSwapchainPresentMode(details.numPresentModes, details.presentModes);
-  VkExtent2D extent = chooseSwapchainExtent(window, details.capabilities);
+  VkbSwapchainSupportDetails details = vkb_swapchainSupportDetails(physicalDevice, queueFamilyIndex, surface);
+  VkSurfaceFormatKHR format = s_chooseSwapchainSurfaceFormat(details.numFormats, details.formats);
+  VkPresentModeKHR presentMode = s_chooseSwapchainPresentMode(details.numPresentModes, details.presentModes);
+  VkExtent2D extent = s_chooseSwapchainExtent(window, details.capabilities);
   uint32_t minImageCount = details.capabilities.minImageCount + 1;
   if (details.capabilities.maxImageCount > 0 && minImageCount > details.capabilities.maxImageCount) {
     minImageCount = details.capabilities.maxImageCount;
   }
-  if (minImageCount > MAX_SWAPCHAIN_IMAGES) {
-    minImageCount = MAX_SWAPCHAIN_IMAGES;
+  if (minImageCount > VKB_MAX_SWAPCHAIN_IMAGES) {
+    minImageCount = VKB_MAX_SWAPCHAIN_IMAGES;
   }
   VkSwapchainCreateInfoKHR info = {
     VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR, NULL, 0,
@@ -31,24 +31,24 @@ VkSwapchainCreateInfoKHR vkb_swapchainCreateInfo(VkPhysicalDevice physicalDevice
   return info;
 }
 
-SwapchainSupportDetails vkb_swapchainSupportDetails(VkPhysicalDevice physicalDevice, uint32_t queueFamilyIndex, VkSurfaceKHR surface) {
-  SwapchainSupportDetails details = {0};
+VkbSwapchainSupportDetails vkb_swapchainSupportDetails(VkPhysicalDevice physicalDevice, uint32_t queueFamilyIndex, VkSurfaceKHR surface) {
+  VkbSwapchainSupportDetails details = {0};
   vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physicalDevice, surface, &details.capabilities);
   vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, surface, &details.numFormats, NULL);
   if (details.numFormats != 0) {
-    details.numFormats = (details.numFormats > MAX_SWAPCHAIN_SURFACE_FORMATS) ? MAX_SWAPCHAIN_SURFACE_FORMATS : details.numFormats;
+    details.numFormats = (details.numFormats > VKB_MAX_SWAPCHAIN_SURFACE_FORMATS) ? VKB_MAX_SWAPCHAIN_SURFACE_FORMATS : details.numFormats;
     vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, surface, &details.numFormats, details.formats);
   }
   vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice, surface, &details.numPresentModes, NULL);
   if (details.numPresentModes != 0) {
-    details.numPresentModes = (details.numPresentModes > MAX_SWAPCHAIN_PRESENT_MODES) ? MAX_SWAPCHAIN_PRESENT_MODES : details.numPresentModes;
+    details.numPresentModes = (details.numPresentModes > VKB_MAX_SWAPCHAIN_PRESENT_MODES) ? VKB_MAX_SWAPCHAIN_PRESENT_MODES : details.numPresentModes;
     vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice, surface, &details.numPresentModes, details.presentModes);
   }
   vkGetPhysicalDeviceSurfaceSupportKHR(physicalDevice, queueFamilyIndex, surface, &details.presentSupportedOnQueue);
   return details;
 }
 
-VkSurfaceFormatKHR chooseSwapchainSurfaceFormat(uint32_t numFormats, VkSurfaceFormatKHR *formats) {
+VkSurfaceFormatKHR s_chooseSwapchainSurfaceFormat(uint32_t numFormats, VkSurfaceFormatKHR *formats) {
   for (uint32_t i = 0; i < numFormats; i++) {
     if (formats[i].format == VK_FORMAT_R8G8B8A8_UNORM) {
       return formats[i];
@@ -57,7 +57,7 @@ VkSurfaceFormatKHR chooseSwapchainSurfaceFormat(uint32_t numFormats, VkSurfaceFo
   return formats[0];
 }
 
-VkPresentModeKHR chooseSwapchainPresentMode(uint32_t numPresentModes, VkPresentModeKHR *modes) {
+VkPresentModeKHR s_chooseSwapchainPresentMode(uint32_t numPresentModes, VkPresentModeKHR *modes) {
   for (uint32_t i = 0; i < numPresentModes; i++) {
     if (modes[i] == VK_PRESENT_MODE_MAILBOX_KHR) {
       return modes[i];
@@ -66,15 +66,15 @@ VkPresentModeKHR chooseSwapchainPresentMode(uint32_t numPresentModes, VkPresentM
   return VK_PRESENT_MODE_FIFO_KHR;
 }
 
-VkExtent2D chooseSwapchainExtent(VkExtent2D window, VkSurfaceCapabilitiesKHR capabilities) {
+VkExtent2D s_chooseSwapchainExtent(VkExtent2D window, VkSurfaceCapabilitiesKHR capabilities) {
   int width, height;
   VkExtent2D extent;
 
   if (capabilities.currentExtent.width != UINT32_MAX) {
     extent = capabilities.currentExtent;
   } else {
-	extent.width = window.width;
-	extent.height = window.height;
+	  extent.width = window.width;
+	  extent.height = window.height;
     #define MAX(x, y) (((x) > (y)) ? (x) : (y))
     #define MIN(x, y) (((x) < (y)) ? (x) : (y))
     extent.width = MAX(capabilities.minImageExtent.width, MIN(capabilities.maxImageExtent.width, extent.width));
@@ -82,5 +82,6 @@ VkExtent2D chooseSwapchainExtent(VkExtent2D window, VkSurfaceCapabilitiesKHR cap
     #undef MAX
     #undef MIN
   }
+
   return extent;
 }

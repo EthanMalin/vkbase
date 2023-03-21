@@ -2,6 +2,6 @@ import os
 
 Import("env")
 
-env['VULKAN'] = os.path.abspath(os.path.join(env['ROOT'], '..', '..', 'vulkan'))
+env['VULKAN_SDK'] = os.path.abspath(os.environ['VULKAN_SDK'])
 
 Return("env")

@@ -1,6 +1,6 @@
 #include "vkbase.h"
 
-VkResult vkb_createBuffer(VkPhysicalDevice pd, VkDevice d, VkBufferCreateInfo *info, VkMemoryPropertyFlags memProps, Buffer *out) {
+VkResult vkb_createBuffer(VkPhysicalDevice pd, VkDevice d, VkBufferCreateInfo *info, VkMemoryPropertyFlags memProps, VkbBuffer *out) {
   VkMemoryAllocateInfo infoMemory = *vkb_emptyMemory();
   VkMemoryRequirements memRequirements = {0};
 
@@ -17,12 +17,12 @@ VkResult vkb_createBuffer(VkPhysicalDevice pd, VkDevice d, VkBufferCreateInfo *i
   return VK_SUCCESS;
 }
 
-void vkb_destroyBuffer(VkDevice d, Buffer buffer) {
+void vkb_destroyBuffer(VkDevice d, VkbBuffer buffer) {
   vkFreeMemory(d, buffer.memory, NULL);
   vkDestroyBuffer(d, buffer.buffer, NULL);
 }
 
-VkResult vkb_createImage(VkPhysicalDevice pd, VkDevice d, VkImageCreateInfo *info, VkMemoryPropertyFlags memProps, Image *out) {
+VkResult vkb_createImage(VkPhysicalDevice pd, VkDevice d, VkImageCreateInfo *info, VkMemoryPropertyFlags memProps, VkbImage *out) {
   VkMemoryAllocateInfo infoMemory = *vkb_emptyMemory();
   VkMemoryRequirements memRequirements = {0};
 
@@ -39,7 +39,7 @@ VkResult vkb_createImage(VkPhysicalDevice pd, VkDevice d, VkImageCreateInfo *inf
   return VK_SUCCESS;
 }
 
-void vkb_destroyImage(VkDevice d, Image image) {
+void vkb_destroyImage(VkDevice d, VkbImage image) {
   vkFreeMemory(d, image.memory, NULL);
   vkDestroyImage(d, image.image, NULL);
 }
