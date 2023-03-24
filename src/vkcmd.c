@@ -1,6 +1,6 @@
 #include "vkbase.h"
 
-void cmdTransitionImageLayout(VkCommandBuffer commandBuffer, VkImage image, VkImageLayout oldLayout, VkImageLayout newLayout) {
+void vkb_cmdTransitionImageLayout(VkCommandBuffer commandBuffer, VkImage image, VkImageLayout oldLayout, VkImageLayout newLayout) {
   VkImageSubresourceRange wholeImage = {
     VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1
   };

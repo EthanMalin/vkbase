@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <string.h>
+#include <stdbool.h>
 
 #define VK_CHECK(f) {					                                                        \
   {                                                                                   \
@@ -33,6 +34,7 @@
   }								                                                                    \
 }						                                                                          \
 
+#define VKB_MAX_GRAPHICS_QUEUES 4
 #define VKB_MAX_SWAPCHAIN_IMAGES 8
 #define VKB_MAX_SWAPCHAIN_SURFACE_FORMATS 128
 #define VKB_MAX_SWAPCHAIN_PRESENT_MODES 4
@@ -47,6 +49,11 @@ typedef struct VkbImage {
   VkImage image;
   VkDeviceMemory memory;
 } VkbImage;
+
+typedef struct VkbShaderImage {
+  VkbImage image;
+  VkImageView view;
+} VkbShaderImage;
 
 typedef struct VkbQueueFamilyIndices {
   uint32_t graphicsIndex;
@@ -76,11 +83,12 @@ typedef struct VkbSwapchain {
 } VkbSwapchain;
 
 typedef struct VkbBase {
-  VkInstance instance;
-  VkPhysicalDevice physical;
-  VkDevice logical;  
-  VkQueue queue;
-  VkbQueueFamilyIndices queueFamilyIndices;
+  VkInstance inst;
+  VkPhysicalDevice pdev;
+  VkDevice dev;  
+  VkQueue gq; // graphics queue        
+  VkQueue pq; // present queue
+  VkbQueueFamilyIndices qfi;
 } VkbBase;
 
 /* --- variables --- */
@@ -204,7 +212,7 @@ extern VkFramebufferCreateInfo vkb_simpleFramebuffer(VkRenderPass renderPass, ui
 extern size_t readFile(char *filename, char *buffer);
 
 extern int32_t getQueueFamilyIndex(VkPhysicalDevice physicalDevice, VkQueueFlagBits queueSupport);
-extern void getQueueFamilyIndices(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface, VkbQueueFamilyIndices *qfi);
+extern void vkb_getQueueFamilyIndices(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface, VkbQueueFamilyIndices *qfi);
 
 extern VkBool32 checkDeviceSupportsExtensions(VkPhysicalDevice physicalDevice);
 extern VkBool32 isPhysicalDeviceSuitable(VkPhysicalDevice physicalDevice);
@@ -213,9 +221,12 @@ extern VkResult pickPhysicalDevice(VkInstance instance, VkPhysicalDevice *physic
 extern int32_t findMemoryTypeIndex(VkPhysicalDevice physicalDevice, uint32_t typeFilter, VkMemoryPropertyFlags properties);
 
 /* vkcmd.c */
-extern void cmdTransitionImageLayout(VkCommandBuffer commandBuffer, VkImage image, VkImageLayout oldLayout, VkImageLayout newLayout);
+extern void vkb_cmdTransitionImageLayout(VkCommandBuffer commandBuffer, VkImage image, VkImageLayout oldLayout, VkImageLayout newLayout);
 
 /* vkswap.c */
 extern VkbSwapchainSupportDetails vkb_swapchainSupportDetails(VkPhysicalDevice physicalDevice, uint32_t queueFamilyIndex, VkSurfaceKHR surface);
 extern VkSwapchainCreateInfoKHR vkb_swapchainCreateInfo(VkPhysicalDevice physicalDevice, uint32_t queueFamilyIndex, VkSurfaceKHR surface, VkExtent2D window);
+
+/* vkformat.c */
+extern bool vkb_isDepthFormat(VkFormat format);
 #endif /* VK_BASE_H */
