@@ -13,4 +13,5 @@ void vkb_cmdTransitionImageLayout(VkCommandBuffer commandBuffer, VkImage image, 
     image, wholeImage
   };
   vkCmdPipelineBarrier(commandBuffer, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, 0, 0, NULL, 0, NULL, 1, &barrier);
+  return;
 }

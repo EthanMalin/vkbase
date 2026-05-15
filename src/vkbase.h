@@ -1,6 +1,7 @@
 #ifndef VK_BASE_H
 #define VK_BASE_H
 
+/* Includes */
 #include <vulkan/vulkan.h>
 
 #include <stdlib.h>
@@ -9,6 +10,11 @@
 #include <string.h>
 #include <stdbool.h>
 
+/* Macros */
+
+/* VK_CHECK can wrap a Vulkan function call and check if the return was success.
+    If return was not success, it prints an error message and returns the VkResult.
+    This macro can only be used in functions which themselves return VkResult. */
 #define VK_CHECK(f) {					                                                        \
   {                                                                                   \
     VkResult err = (f);                                                               \
@@ -21,7 +27,8 @@
   }								                                                                    \
 }								                                                                      \
 
-
+/* VK_CHECK2 is the same as VK_CHECK but checks greater than or equal to VK_SUCCESS,
+    which allows for wider range of success (i.e. VK_INCOMPLETE). */
 #define VK_CHECK2(f) {					                                                      \
   {                                                                                   \
     VkResult err = (f);                                                               \
@@ -39,7 +46,7 @@
 #define VKB_MAX_SWAPCHAIN_SURFACE_FORMATS 128
 #define VKB_MAX_SWAPCHAIN_PRESENT_MODES 4
 
-/* --- data types ---  */
+/* --- Data types ---  */
 typedef struct VkbBuffer {
   VkBuffer buffer;
   VkDeviceMemory memory;
@@ -86,12 +93,15 @@ typedef struct VkbBase {
   VkInstance inst;
   VkPhysicalDevice pdev;
   VkDevice dev;  
-  VkQueue gq; // graphics queue        
+  VkQueue gq; // graphics queue
   VkQueue pq; // present queue
   VkbQueueFamilyIndices qfi;
 } VkbBase;
 
-/* --- variables --- */
+/* --- Static variables --- */
+
+/* The following are static variables for various extensions used by the Vulkan base.
+    If making changes, make sure to update the number macro alongside the array itself. */
 #define VKB_NUM_INSTANCE_LAYERS_DEBUG 1
 #define VKB_INSTANCE_LAYERS_DEBUG s_instanceLayersDebug
 static const char *const s_instanceLayersDebug[] = {
