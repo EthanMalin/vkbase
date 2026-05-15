@@ -8,7 +8,7 @@ VkResult vkb_createBuffer(VkPhysicalDevice pd, VkDevice d, VkBufferCreateInfo *i
 
   vkGetBufferMemoryRequirements(d, out->buffer, &memRequirements);
 
-  int32_t memTypeIndex = findMemoryTypeIndex(pd, memRequirements.memoryTypeBits, memProps);
+  int32_t memTypeIndex = vkb_findMemoryTypeIndex(pd, memRequirements.memoryTypeBits, memProps);
   if (memTypeIndex < 0) return VK_ERROR_FEATURE_NOT_PRESENT;
   infoMemory.allocationSize = memRequirements.size;
   infoMemory.memoryTypeIndex = (uint32_t)memTypeIndex;
@@ -32,7 +32,7 @@ VkResult vkb_createImage(VkPhysicalDevice pd, VkDevice d, VkImageCreateInfo *inf
 
   vkGetImageMemoryRequirements(d, out->image, &memRequirements);
 
-  int32_t memTypeIndex = findMemoryTypeIndex(pd, memRequirements.memoryTypeBits, memProps);
+  int32_t memTypeIndex = vkb_findMemoryTypeIndex(pd, memRequirements.memoryTypeBits, memProps);
   if (memTypeIndex < 0) return VK_ERROR_FEATURE_NOT_PRESENT;
   infoMemory.allocationSize = memRequirements.size;
   infoMemory.memoryTypeIndex = (uint32_t)memTypeIndex;
@@ -46,4 +46,26 @@ VkResult vkb_createImage(VkPhysicalDevice pd, VkDevice d, VkImageCreateInfo *inf
 void vkb_destroyImage(VkDevice d, VkbImage image) {
   vkDestroyImage(d, image.image, NULL);
   vkFreeMemory(d, image.memory, NULL);
+}
+
+VkResult vkb_createShaderImage(VkPhysicalDevice pd, VkDevice d, VkImageCreateInfo *info, VkMemoryPropertyFlags memProps, VkImageAspectFlags aspect, VkbShaderImage *out) {
+  VK_CHECK(vkb_createImage(pd, d, info, memProps, &out->image));
+
+  VkImageViewCreateInfo viewInfo = *vkb_emptyImageView();
+  viewInfo.image = out->image.image;
+  viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+  viewInfo.format = info->format;
+  viewInfo.subresourceRange.aspectMask = aspect;
+  viewInfo.subresourceRange.baseMipLevel = 0;
+  viewInfo.subresourceRange.levelCount = info->mipLevels;
+  viewInfo.subresourceRange.baseArrayLayer = 0;
+  viewInfo.subresourceRange.layerCount = info->arrayLayers;
+
+  VK_CHECK(vkCreateImageView(d, &viewInfo, NULL, &out->view));
+  return VK_SUCCESS;
+}
+
+void vkb_destroyShaderImage(VkDevice d, VkbShaderImage image) {
+  vkDestroyImageView(d, image.view, NULL);
+  vkb_destroyImage(d, image.image);
 }

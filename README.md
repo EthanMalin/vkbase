@@ -20,7 +20,7 @@ Output is placed in `dist/`:
 
 ```
 dist/
-  libvkbase.a       # static library
+  lib/libvkbase.a   # static library
   include/vkbase.h  # public header
 ```
 
@@ -31,7 +31,7 @@ dist/
 The typical initialization flow:
 
 1. Use `vkb_emptyInstance()` / `vkb_simpleInstance()` to build a `VkInstanceCreateInfo`, then call `vkCreateInstance`.
-2. Call `pickPhysicalDevice()` to select a suitable GPU. Use `vkb_getQueueFamilyIndices()` to find graphics/present/compute family indices.
+2. Call `vkb_pickPhysicalDevice()` to select a suitable GPU. Use `vkb_getQueueFamilyIndices()` to find graphics/present/compute family indices.
 3. Use `vkb_simpleDevice()` to build a `VkDeviceCreateInfo`, then call `vkCreateDevice`.
 4. For windowed rendering, call `vkb_swapchainSupportDetails()` then `vkb_swapchainCreateInfo()` to configure the swapchain.
 5. Allocate buffers/images with `vkb_createBuffer` / `vkb_createImage`, which handle memory allocation automatically.
@@ -68,8 +68,10 @@ All `vkb_empty*` functions return a zero-initialized create-info struct of the m
 |----------|-------------|
 | `vkb_createBuffer(pd, d, info, memProps, out)` | Creates a `VkBuffer` and allocates memory matching `memProps` |
 | `vkb_createImage(pd, d, info, memProps, out)` | Creates a `VkImage` and allocates memory matching `memProps` |
+| `vkb_createShaderImage(pd, d, info, memProps, aspect, out)` | Creates a `VkbShaderImage` (image + view) with the given aspect flags |
 | `vkb_destroyBuffer(d, buffer)` | Destroys buffer and frees its memory |
 | `vkb_destroyImage(d, image)` | Destroys image and frees its memory |
+| `vkb_destroyShaderImage(d, image)` | Destroys image view, image, and frees its memory |
 
 ### Simple create-info builders — `vksimple.c`
 
@@ -101,13 +103,13 @@ Each function returns a `const` pointer to a zero-initialized struct of the name
 
 | Function | Description |
 |----------|-------------|
-| `readFile(filename, buffer)` | Reads a file into a heap-allocated buffer; returns byte count |
-| `getQueueFamilyIndex(pd, queueFlags)` | Returns first queue family index supporting `queueFlags` |
+| `vkb_readFile(filename, buffer)` | Reads a file into a heap-allocated buffer; returns byte count |
+| `vkb_getQueueFamilyIndex(pd, queueFlags)` | Returns first queue family index supporting `queueFlags` |
 | `vkb_getQueueFamilyIndices(pd, surface, out)` | Fills `VkbQueueFamilyIndices` for graphics, compute, and present |
-| `checkDeviceSupportsExtensions(pd)` | Returns true if the device supports required extensions |
-| `isPhysicalDeviceSuitable(pd)` | Returns true if the device meets minimum requirements |
-| `pickPhysicalDevice(instance, out)` | Selects the first suitable physical device |
-| `findMemoryTypeIndex(pd, typeFilter, props)` | Finds a memory type index matching filter and property flags |
+| `vkb_checkDeviceSupportsExtensions(pd)` | Returns true if the device supports required extensions |
+| `vkb_isPhysicalDeviceSuitable(pd)` | Returns true if the device meets minimum requirements |
+| `vkb_pickPhysicalDevice(instance, out)` | Selects the first suitable physical device |
+| `vkb_findMemoryTypeIndex(pd, typeFilter, props)` | Finds a memory type index matching filter and property flags |
 
 ### Commands — `vkcmd.c`
 

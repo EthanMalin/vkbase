@@ -42,5 +42,5 @@ for source in sources:
 lib = env.Library(os.path.join(env['LIB'], 'vkbase'), objs, LIBS=['vulkan'])
 
 # install library and alias to platform target
-installed = env.Install('dist', lib) + env.Install('dist/include', headers)
+installed = env.Install(os.path.join('dist', 'lib'), lib) + env.Install(os.path.join('dist', 'include'), headers)
 env.Alias(platform, installed)

@@ -1,6 +1,6 @@
 #include "vkbase.h"
 
-size_t readFile(char *filename, char **buffer) {
+size_t vkb_readFile(char *filename, char **buffer) {
   FILE *fp;
   size_t fileSize = 0;
   if (NULL == filename || NULL == buffer)
@@ -26,7 +26,7 @@ size_t readFile(char *filename, char **buffer) {
   return fileSize;
 }
 
-int32_t getQueueFamilyIndex(VkPhysicalDevice physicalDevice, VkQueueFlagBits queueSupport) {
+int32_t vkb_getQueueFamilyIndex(VkPhysicalDevice physicalDevice, VkQueueFlagBits queueSupport) {
   uint32_t queueFamilyCount = 0u;
   VkQueueFamilyProperties queueFamilyProperties[16];
 
@@ -87,7 +87,12 @@ void vkb_getQueueFamilyIndices(VkPhysicalDevice physicalDevice, VkSurfaceKHR sur
   }
 }
 
-VkBool32 checkDeviceSupportsExtensions(VkPhysicalDevice physicalDevice) {
+static const char *const s_deviceExtensions[] = {
+  VK_KHR_SWAPCHAIN_EXTENSION_NAME,
+};
+#define VKB_NUM_DEVICE_EXTENSIONS 1
+
+VkBool32 vkb_checkDeviceSupportsExtensions(VkPhysicalDevice physicalDevice) {
   VkBool32 allSupported = VK_TRUE;
   VkBool32 extensionSupported = VK_TRUE;
   uint32_t extensionCount = 0;
@@ -111,14 +116,14 @@ VkBool32 checkDeviceSupportsExtensions(VkPhysicalDevice physicalDevice) {
   return allSupported;
 }
 
-VkBool32 isPhysicalDeviceSuitable(VkPhysicalDevice physicalDevice) {
-  int32_t index = getQueueFamilyIndex(physicalDevice, VK_QUEUE_GRAPHICS_BIT);
-  VkBool32 extensionsSupported = checkDeviceSupportsExtensions(physicalDevice);
+VkBool32 vkb_isPhysicalDeviceSuitable(VkPhysicalDevice physicalDevice) {
+  int32_t index = vkb_getQueueFamilyIndex(physicalDevice, VK_QUEUE_GRAPHICS_BIT);
+  VkBool32 extensionsSupported = vkb_checkDeviceSupportsExtensions(physicalDevice);
 
   return (index >= 0) && extensionsSupported ? VK_TRUE : VK_FALSE;
 }
 
-VkResult pickPhysicalDevice(VkInstance instance, VkPhysicalDevice *physicalDevice) {
+VkResult vkb_pickPhysicalDevice(VkInstance instance, VkPhysicalDevice *physicalDevice) {
   VkPhysicalDevice devices[8];
   uint32_t deviceCount = 0;
 
@@ -126,7 +131,7 @@ VkResult pickPhysicalDevice(VkInstance instance, VkPhysicalDevice *physicalDevic
   if (deviceCount > 8) deviceCount = 8;
   VK_CHECK(vkEnumeratePhysicalDevices(instance, &deviceCount, devices));
   for (uint32_t i = 0; i < deviceCount; i++) {
-    if (isPhysicalDeviceSuitable(devices[i])) {
+    if (vkb_isPhysicalDeviceSuitable(devices[i])) {
       *physicalDevice = devices[i];
       return VK_SUCCESS;
     }
@@ -134,7 +139,7 @@ VkResult pickPhysicalDevice(VkInstance instance, VkPhysicalDevice *physicalDevic
   return VK_ERROR_INITIALIZATION_FAILED;
 }
 
-int32_t findMemoryTypeIndex(VkPhysicalDevice physicalDevice, uint32_t typeFilter, VkMemoryPropertyFlags properties) {
+int32_t vkb_findMemoryTypeIndex(VkPhysicalDevice physicalDevice, uint32_t typeFilter, VkMemoryPropertyFlags properties) {
   VkPhysicalDeviceMemoryProperties memProperties;
   vkGetPhysicalDeviceMemoryProperties(physicalDevice, &memProperties);
   for (int32_t i = 0; i < memProperties.memoryTypeCount; i++) {

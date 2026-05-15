@@ -102,8 +102,10 @@ typedef struct VkbBase {
 /* vkresource.c */
 extern VkResult vkb_createBuffer(VkPhysicalDevice pd, VkDevice d, VkBufferCreateInfo *info, VkMemoryPropertyFlags memProps, VkbBuffer *out);
 extern VkResult vkb_createImage(VkPhysicalDevice pd, VkDevice d, VkImageCreateInfo *info, VkMemoryPropertyFlags memProps, VkbImage *out);
+extern VkResult vkb_createShaderImage(VkPhysicalDevice pd, VkDevice d, VkImageCreateInfo *info, VkMemoryPropertyFlags memProps, VkImageAspectFlags aspect, VkbShaderImage *out);
 extern void vkb_destroyBuffer(VkDevice d, VkbBuffer buffer);
 extern void vkb_destroyImage(VkDevice d, VkbImage image);
+extern void vkb_destroyShaderImage(VkDevice d, VkbShaderImage image);
 
 /* vkempties.c */
 extern const VkInstanceCreateInfo *const vkb_emptyInstance();
@@ -171,16 +173,16 @@ extern VkRenderPassCreateInfo vkb_simpleRenderPass(uint32_t attachmentCount, VkA
 extern VkFramebufferCreateInfo vkb_simpleFramebuffer(VkRenderPass renderPass, uint32_t attachmentCount, const VkImageView *pAttachments, uint32_t width, uint32_t height, uint32_t layers);
 
 /* vkutil.c */
-extern size_t readFile(char *filename, char **buffer);
+extern size_t vkb_readFile(char *filename, char **buffer);
 
-extern int32_t getQueueFamilyIndex(VkPhysicalDevice physicalDevice, VkQueueFlagBits queueSupport);
+extern int32_t vkb_getQueueFamilyIndex(VkPhysicalDevice physicalDevice, VkQueueFlagBits queueSupport);
 extern void vkb_getQueueFamilyIndices(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface, VkbQueueFamilyIndices *qfi);
 
-extern VkBool32 checkDeviceSupportsExtensions(VkPhysicalDevice physicalDevice);
-extern VkBool32 isPhysicalDeviceSuitable(VkPhysicalDevice physicalDevice);
-extern VkResult pickPhysicalDevice(VkInstance instance, VkPhysicalDevice *physicalDevice);
+extern VkBool32 vkb_checkDeviceSupportsExtensions(VkPhysicalDevice physicalDevice);
+extern VkBool32 vkb_isPhysicalDeviceSuitable(VkPhysicalDevice physicalDevice);
+extern VkResult vkb_pickPhysicalDevice(VkInstance instance, VkPhysicalDevice *physicalDevice);
 
-extern int32_t findMemoryTypeIndex(VkPhysicalDevice physicalDevice, uint32_t typeFilter, VkMemoryPropertyFlags properties);
+extern int32_t vkb_findMemoryTypeIndex(VkPhysicalDevice physicalDevice, uint32_t typeFilter, VkMemoryPropertyFlags properties);
 
 /* vkcmd.c */
 extern void vkb_cmdTransitionImageLayout(VkCommandBuffer commandBuffer, VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout);
