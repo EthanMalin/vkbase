@@ -20,8 +20,8 @@
     VkResult err = (f);                                                               \
     if (VK_SUCCESS != err)							                                              \
     {								                                                                  \
-        printf("VULKAN_ERROR: %d : file(%s) : line(%d)\n", err, __FILE__, __LINE__);	\
-        printf("\t%s\n", #f);	                                                        \
+        fprintf(stderr, "VULKAN_ERROR: %d : file(%s) : line(%d)\n", err, __FILE__, __LINE__);	\
+        fprintf(stderr, "\t%s\n", #f);	                                              \
         return err;						                                                        \
     }								                                                                  \
   }								                                                                    \
@@ -34,14 +34,13 @@
     VkResult err = (f);                                                               \
     if (VK_SUCCESS > err)							                                                \
     {								                                                                  \
-        printf("VULKAN_ERROR: %d : file(%s) : line(%d)\n", err, __FILE__, __LINE__);	\
-        printf("\t%s\n", #f);	                                                        \
+        fprintf(stderr, "VULKAN_ERROR: %d : file(%s) : line(%d)\n", err, __FILE__, __LINE__);	\
+        fprintf(stderr, "\t%s\n", #f);	                                              \
         return err;						                                                        \
     }								                                                                  \
   }								                                                                    \
 }						                                                                          \
 
-#define VKB_MAX_GRAPHICS_QUEUES 4
 #define VKB_MAX_SWAPCHAIN_IMAGES 8
 #define VKB_MAX_SWAPCHAIN_SURFACE_FORMATS 128
 #define VKB_MAX_SWAPCHAIN_PRESENT_MODES 4
@@ -98,53 +97,6 @@ typedef struct VkbBase {
   VkbQueueFamilyIndices qfi;
 } VkbBase;
 
-/* --- Static variables --- */
-
-/* The following are static variables for various extensions used by the Vulkan base.
-    If making changes, make sure to update the number macro alongside the array itself. */
-#define VKB_NUM_INSTANCE_LAYERS_DEBUG 1
-#define VKB_INSTANCE_LAYERS_DEBUG s_instanceLayersDebug
-static const char *const s_instanceLayersDebug[] = {
-    "VK_LAYER_KHRONOS_validation"
-};
-
-#ifdef __APPLE__
-#define VKB_NUM_INSTANCE_EXTENSIONS_DEBUG 3
-#define VKB_INSTANCE_EXTENSIONS_DEBUG s_instanceExtensionsDebug
-static const char *const s_instanceExtensionsDebug[] = {
-  VK_EXT_DEBUG_UTILS_EXTENSION_NAME,
-  "VK_KHR_surface",
-  "VK_EXT_metal_surface"
-};
-
-#define VKB_NUM_INSTANCE_EXTENSIONS 2
-#define VKB_INSTANCE_EXTENSIONS s_instanceExtensions
-static const char *const s_instanceExtensions[] = {
-  "VK_KHR_surface",
-  "VK_EXT_metal_surface"
-};
-#endif
-
-#ifdef _WIN32
-#define VKB_NUM_INSTANCE_EXTENSIONS_DEBUG 2
-#define VKB_INSTANCE_EXTENSIONS_DEBUG s_instanceExtensionsDebug
-static const char *const s_instanceExtensionsDebug[] = {
-  VK_EXT_DEBUG_UTILS_EXTENSION_NAME,
-  "VK_KHR_surface",
-};
-
-#define VKB_NUM_INSTANCE_EXTENSIONS 1
-#define VKB_INSTANCE_EXTENSIONS s_instanceExtensions
-static const char *const s_instanceExtensions[] = {
-  "VK_KHR_surface",
-};
-#endif
-
-#define VKB_NUM_DEVICE_EXTENSIONS 1
-#define VKB_DEVICE_EXTENSIONS s_deviceExtensions
-static const char *const s_deviceExtensions[] = {
-  VK_KHR_SWAPCHAIN_EXTENSION_NAME,
-};
 
 /* --- prototypes --- */
 /* vkresource.c */
@@ -219,7 +171,7 @@ extern VkRenderPassCreateInfo vkb_simpleRenderPass(uint32_t attachmentCount, VkA
 extern VkFramebufferCreateInfo vkb_simpleFramebuffer(VkRenderPass renderPass, uint32_t attachmentCount, const VkImageView *pAttachments, uint32_t width, uint32_t height, uint32_t layers);
 
 /* vkutil.c */
-extern size_t readFile(char *filename, char *buffer);
+extern size_t readFile(char *filename, char **buffer);
 
 extern int32_t getQueueFamilyIndex(VkPhysicalDevice physicalDevice, VkQueueFlagBits queueSupport);
 extern void vkb_getQueueFamilyIndices(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface, VkbQueueFamilyIndices *qfi);
@@ -231,7 +183,7 @@ extern VkResult pickPhysicalDevice(VkInstance instance, VkPhysicalDevice *physic
 extern int32_t findMemoryTypeIndex(VkPhysicalDevice physicalDevice, uint32_t typeFilter, VkMemoryPropertyFlags properties);
 
 /* vkcmd.c */
-extern void vkb_cmdTransitionImageLayout(VkCommandBuffer commandBuffer, VkImage image, VkImageLayout oldLayout, VkImageLayout newLayout);
+extern void vkb_cmdTransitionImageLayout(VkCommandBuffer commandBuffer, VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout);
 
 /* vkswap.c */
 extern VkbSwapchainSupportDetails vkb_swapchainSupportDetails(VkPhysicalDevice physicalDevice, uint32_t queueFamilyIndex, VkSurfaceKHR surface);

@@ -1,18 +1,23 @@
 #include "vkbase.h"
 
-size_t readFile(char *filename, char *buffer) {
+size_t readFile(char *filename, char **buffer) {
   FILE *fp;
-  size_t fileSize;
+  size_t fileSize = 0;
+  if (NULL == filename || NULL == buffer)
+  {
+    return fileSize;
+  }
+
   fp = fopen(filename, "rb");
   if (fp) {
     if (0 == fseek(fp, 0, SEEK_END)) {
       fileSize = ftell(fp);
       if (fileSize != -1) {
-        buffer = malloc(fileSize * sizeof(char));
+        *buffer = malloc(fileSize * sizeof(char));
         rewind(fp);
-        fileSize = fread(buffer, sizeof(char), fileSize, fp);
+        fileSize = fread(*buffer, sizeof(char), fileSize, fp);
         if (ferror(fp)) {
-          free(buffer);
+          free(*buffer);
           fileSize = 0;
         }
       }
@@ -22,11 +27,12 @@ size_t readFile(char *filename, char *buffer) {
 }
 
 int32_t getQueueFamilyIndex(VkPhysicalDevice physicalDevice, VkQueueFlagBits queueSupport) {
-  uint32_t queueFamilyCount = 16;
+  uint32_t queueFamilyCount = 0u;
   VkQueueFamilyProperties queueFamilyProperties[16];
 
+  vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, &queueFamilyCount, NULL);
   vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, &queueFamilyCount, queueFamilyProperties);
-  for (int32_t i = 0; i < queueFamilyCount; i++) {
+  for (uint32_t i = 0u; i < queueFamilyCount; i++) {
     if ((queueFamilyProperties[i].queueFlags & queueSupport) == queueSupport) {
       return  i;
     }
@@ -35,7 +41,7 @@ int32_t getQueueFamilyIndex(VkPhysicalDevice physicalDevice, VkQueueFlagBits que
 }
 
 void vkb_getQueueFamilyIndices(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface, VkbQueueFamilyIndices *qfi) {
-  uint32_t queueFamilyCount = 16;
+  uint32_t queueFamilyCount = 0;
   VkQueueFamilyProperties queueProperties[16];
   VkBool32 presentSupport = VK_FALSE;
 
@@ -52,6 +58,7 @@ void vkb_getQueueFamilyIndices(VkPhysicalDevice physicalDevice, VkSurfaceKHR sur
   qfi->computeIndex = UINT32_MAX;
 
   vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, &queueFamilyCount, NULL);
+  if (queueFamilyCount > 16) queueFamilyCount = 16;
   vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, &queueFamilyCount, queueProperties);
 
   for (uint32_t i = 0; i < queueFamilyCount; i++) {
@@ -112,9 +119,11 @@ VkBool32 isPhysicalDeviceSuitable(VkPhysicalDevice physicalDevice) {
 }
 
 VkResult pickPhysicalDevice(VkInstance instance, VkPhysicalDevice *physicalDevice) {
-  VkPhysicalDevice devices[10];
-  uint32_t deviceCount = 10;
-  
+  VkPhysicalDevice devices[8];
+  uint32_t deviceCount = 0;
+
+  VK_CHECK(vkEnumeratePhysicalDevices(instance, &deviceCount, NULL));
+  if (deviceCount > 8) deviceCount = 8;
   VK_CHECK(vkEnumeratePhysicalDevices(instance, &deviceCount, devices));
   for (uint32_t i = 0; i < deviceCount; i++) {
     if (isPhysicalDeviceSuitable(devices[i])) {

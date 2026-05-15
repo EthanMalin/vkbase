@@ -1,8 +1,11 @@
 #include "vkbase.h"
 
-void vkb_cmdTransitionImageLayout(VkCommandBuffer commandBuffer, VkImage image, VkImageLayout oldLayout, VkImageLayout newLayout) {
+void vkb_cmdTransitionImageLayout(VkCommandBuffer commandBuffer, VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout) {
+  VkImageAspectFlags aspect = vkb_isDepthFormat(format)
+    ? VK_IMAGE_ASPECT_DEPTH_BIT
+    : VK_IMAGE_ASPECT_COLOR_BIT;
   VkImageSubresourceRange wholeImage = {
-    VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1
+    aspect, 0, 1, 0, 1
   };
   VkImageMemoryBarrier barrier = {
     VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER, NULL,

@@ -12,5 +12,4 @@ bool vkb_isDepthFormat(VkFormat format) {
     default:
       return false;
   }
-  return false;
 }

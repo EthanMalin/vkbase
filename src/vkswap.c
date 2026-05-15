@@ -50,9 +50,10 @@ VkbSwapchainSupportDetails vkb_swapchainSupportDetails(VkPhysicalDevice physical
 
 VkSurfaceFormatKHR s_chooseSwapchainSurfaceFormat(uint32_t numFormats, VkSurfaceFormatKHR *formats) {
   for (uint32_t i = 0; i < numFormats; i++) {
-    if (formats[i].format == VK_FORMAT_R8G8B8A8_UNORM) {
-      return formats[i];
-    }
+    if (formats[i].format == VK_FORMAT_R8G8B8A8_UNORM) return formats[i];
+  }
+  for (uint32_t i = 0; i < numFormats; i++) {
+    if (formats[i].format == VK_FORMAT_B8G8R8A8_UNORM) return formats[i];
   }
   return formats[0];
 }
@@ -67,20 +68,19 @@ VkPresentModeKHR s_chooseSwapchainPresentMode(uint32_t numPresentModes, VkPresen
 }
 
 VkExtent2D s_chooseSwapchainExtent(VkExtent2D window, VkSurfaceCapabilitiesKHR capabilities) {
-  int width, height;
   VkExtent2D extent;
 
   if (capabilities.currentExtent.width != UINT32_MAX) {
     extent = capabilities.currentExtent;
   } else {
-	  extent.width = window.width;
-	  extent.height = window.height;
-    #define MAX(x, y) (((x) > (y)) ? (x) : (y))
-    #define MIN(x, y) (((x) < (y)) ? (x) : (y))
-    extent.width = MAX(capabilities.minImageExtent.width, MIN(capabilities.maxImageExtent.width, extent.width));
-    extent.height = MAX(capabilities.minImageExtent.height, MIN(capabilities.maxImageExtent.height, extent.height));
-    #undef MAX
-    #undef MIN
+    uint32_t w = window.width;
+    uint32_t h = window.height;
+    uint32_t minW = capabilities.minImageExtent.width;
+    uint32_t maxW = capabilities.maxImageExtent.width;
+    uint32_t minH = capabilities.minImageExtent.height;
+    uint32_t maxH = capabilities.maxImageExtent.height;
+    extent.width  = w < minW ? minW : (w > maxW ? maxW : w);
+    extent.height = h < minH ? minH : (h > maxH ? maxH : h);
   }
 
   return extent;

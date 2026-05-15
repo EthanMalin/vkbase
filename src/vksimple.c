@@ -1,5 +1,51 @@
 #include "vkbase.h"
 
+#define VKB_NUM_INSTANCE_LAYERS_DEBUG 1
+#define VKB_INSTANCE_LAYERS_DEBUG s_instanceLayersDebug
+static const char *const s_instanceLayersDebug[] = {
+    "VK_LAYER_KHRONOS_validation"
+};
+
+#ifdef __APPLE__
+#define VKB_NUM_INSTANCE_EXTENSIONS_DEBUG 3
+#define VKB_INSTANCE_EXTENSIONS_DEBUG s_instanceExtensionsDebug
+static const char *const s_instanceExtensionsDebug[] = {
+  VK_EXT_DEBUG_UTILS_EXTENSION_NAME,
+  "VK_KHR_surface",
+  "VK_EXT_metal_surface"
+};
+
+#define VKB_NUM_INSTANCE_EXTENSIONS 2
+#define VKB_INSTANCE_EXTENSIONS s_instanceExtensions
+static const char *const s_instanceExtensions[] = {
+  "VK_KHR_surface",
+  "VK_EXT_metal_surface"
+};
+#endif
+
+#ifdef _WIN32
+#define VKB_NUM_INSTANCE_EXTENSIONS_DEBUG 3
+#define VKB_INSTANCE_EXTENSIONS_DEBUG s_instanceExtensionsDebug
+static const char *const s_instanceExtensionsDebug[] = {
+  VK_EXT_DEBUG_UTILS_EXTENSION_NAME,
+  "VK_KHR_surface",
+  "VK_KHR_win32_surface",
+};
+
+#define VKB_NUM_INSTANCE_EXTENSIONS 2
+#define VKB_INSTANCE_EXTENSIONS s_instanceExtensions
+static const char *const s_instanceExtensions[] = {
+  "VK_KHR_surface",
+  "VK_KHR_win32_surface",
+};
+#endif
+
+#define VKB_NUM_DEVICE_EXTENSIONS 1
+#define VKB_DEVICE_EXTENSIONS s_deviceExtensions
+static const char *const s_deviceExtensions[] = {
+  VK_KHR_SWAPCHAIN_EXTENSION_NAME,
+};
+
 VkInstanceCreateInfo vkb_simpleInstance(VkApplicationInfo *pApplicationInfo, VkBool32 debug) {
   VkInstanceCreateInfo infoInstance =  *vkb_emptyInstance();
 
