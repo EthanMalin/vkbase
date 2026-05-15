@@ -9,10 +9,10 @@ platforms = [
 # create environment using mingw compiler
 env = Environment(tools=['mingw'])
 
-# check build script arguments
-platform = ARGUMENTS.get('platform', 0)
-if platform not in platforms:
-  raise Exception('ERROR: platform argument required. Must be one of {0}'.format(platforms))
+# determine platform from target (e.g. "scons mac")
+platform = next((t for t in COMMAND_LINE_TARGETS if t in platforms), None)
+if platform is None:
+  raise Exception('ERROR: platform target required. Must be one of {0}'.format(platforms))
 
 # set up base environment variables
 env['ROOT'] = GetLaunchDir()
@@ -41,6 +41,6 @@ for source in sources:
 # compile library
 lib = env.Library(os.path.join(env['LIB'], 'vkbase'), objs, LIBS=['vulkan'])
 
-# install library
-env.Install('dist', lib)
-env.Install('dist/include', headers)
+# install library and alias to platform target
+installed = env.Install('dist', lib) + env.Install('dist/include', headers)
+env.Alias(platform, installed)
