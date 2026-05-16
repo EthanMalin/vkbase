@@ -4,5 +4,6 @@ Import("env")
 
 env['VULKAN_SDK'] = os.path.abspath(os.environ['VULKAN_SDK'])
 env['SHADER_COMPILER'] = os.path.join(env['VULKAN_SDK'], 'macOS', 'bin', 'glslangValidator')
+env['CGLM'] = os.path.join(env['ROOT'], '..', 'cglm')
 
 Return("env")

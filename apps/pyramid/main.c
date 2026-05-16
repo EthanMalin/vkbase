@@ -1,5 +1,5 @@
 #include <stddef.h>
-#include <math.h>
+#include <cglm/cglm.h>
 #include "vkbase.h"
 #include "vkbnative.h"
 #include "shaders/shaders.h"
@@ -73,67 +73,6 @@ static void generate_brick_texture(uint8_t *pixels) {
             p[0] = r; p[1] = g; p[2] = b; p[3] = 255;
         }
     }
-}
-
-/* --- Column-major mat4 math (matches GLSL layout) ------------------- */
-
-typedef struct { float m[16]; } Mat4;
-
-static Mat4 mat4_identity(void) {
-    Mat4 r = {{0}};
-    r.m[0] = r.m[5] = r.m[10] = r.m[15] = 1.0f;
-    return r;
-}
-
-/* result = a * b, both column-major */
-static Mat4 mat4_mul(Mat4 a, Mat4 b) {
-    Mat4 r = {{0}};
-    for (int c = 0; c < 4; c++)
-        for (int row = 0; row < 4; row++)
-            for (int k = 0; k < 4; k++)
-                r.m[c*4 + row] += a.m[k*4 + row] * b.m[c*4 + k];
-    return r;
-}
-
-/* Perspective projection — Vulkan clip space (Y down, depth [0,1], RH) */
-static Mat4 mat4_perspective(float fovY, float aspect, float zNear, float zFar) {
-    float f = 1.0f / tanf(fovY * 0.5f);
-    Mat4 r = {{0}};
-    r.m[0]  =  f / aspect;
-    r.m[5]  = -f;                                    /* flip Y for Vulkan NDC */
-    r.m[10] = zFar / (zNear - zFar);
-    r.m[11] = -1.0f;
-    r.m[14] = (zNear * zFar) / (zNear - zFar);
-    return r;
-}
-
-/* View matrix — camera at (ex,ey,ez) looking at (tx,ty,tz), up=(0,1,0) */
-static Mat4 mat4_lookat(float ex, float ey, float ez,
-                         float tx, float ty, float tz) {
-    float fx = tx-ex, fy = ty-ey, fz = tz-ez;
-    float fl = sqrtf(fx*fx + fy*fy + fz*fz);
-    fx /= fl; fy /= fl; fz /= fl;
-    /* right = cross(forward, world_up) */
-    float rx = -fz, ry = 0.0f, rz = fx;
-    float rl = sqrtf(rx*rx + ry*ry + rz*rz);
-    rx /= rl; ry /= rl; rz /= rl;
-    /* recalculated up = cross(right, forward) */
-    float ux = ry*fz - rz*fy, uy = rz*fx - rx*fz, uz = rx*fy - ry*fx;
-    Mat4 r = {{0}};
-    r.m[0] = rx;  r.m[4] = ry;  r.m[8]  = rz;  r.m[12] = -(rx*ex + ry*ey + rz*ez);
-    r.m[1] = ux;  r.m[5] = uy;  r.m[9]  = uz;  r.m[13] = -(ux*ex + uy*ey + uz*ez);
-    r.m[2] = -fx; r.m[6] = -fy; r.m[10] = -fz; r.m[14] =   fx*ex + fy*ey + fz*ez;
-    r.m[15] = 1.0f;
-    return r;
-}
-
-/* Rotation around Y axis */
-static Mat4 mat4_rotY(float a) {
-    float c = cosf(a), s = sinf(a);
-    Mat4 r = mat4_identity();
-    r.m[0] = c;  r.m[8]  =  s;
-    r.m[2] = -s; r.m[10] =  c;
-    return r;
 }
 
 /* --- One-shot command buffer helpers -------------------------------- */
@@ -440,7 +379,7 @@ int main(void) {
     VkPushConstantRange pcRange = {
         .stageFlags = VK_SHADER_STAGE_VERTEX_BIT,
         .offset     = 0,
-        .size       = sizeof(Mat4),
+        .size       = sizeof(mat4),
     };
     VkPipelineLayoutCreateInfo plInfo = *vkb_emptyPipelineLayout();
     plInfo.setLayoutCount         = 1;
@@ -615,13 +554,20 @@ int main(void) {
         /* Compute and push MVP — slow Y-axis spin */
         angle += 0.008f;
         float aspect = (float)swapchain.extent.width / (float)swapchain.extent.height;
-        Mat4 model = mat4_rotY(angle);
-        Mat4 view  = mat4_lookat(0.0f, 0.7f, 2.0f,   /* eye */
-                                  0.0f, 0.2f, 0.0f);  /* target */
-        Mat4 proj  = mat4_perspective(0.8f, aspect, 0.1f, 100.0f);
-        Mat4 mvp   = mat4_mul(mat4_mul(proj, view), model);
+        float zNear = 0.1f, zFar = 100.0f;
+        mat4 model, view, proj, vp, mvp;
+        glm_mat4_identity(model);
+        glm_rotate_y(model, angle, model);
+        glm_lookat((vec3){0.0f, 0.7f, 2.0f}, (vec3){0.0f, 0.2f, 0.0f},
+                   (vec3){0.0f, 1.0f, 0.0f}, view);
+        glm_perspective(0.8f, aspect, zNear, zFar, proj);
+        proj[1][1] *= -1.0f;                            /* Y-down for Vulkan NDC */
+        proj[2][2] = zFar / (zNear - zFar);             /* [0, 1] depth range   */
+        proj[3][2] = (zNear * zFar) / (zNear - zFar);
+        glm_mat4_mul(proj, view, vp);
+        glm_mat4_mul(vp, model, mvp);
         vkCmdPushConstants(cmd, pipeLayout, VK_SHADER_STAGE_VERTEX_BIT,
-                           0, sizeof(Mat4), mvp.m);
+                           0, sizeof(mat4), mvp);
 
         /* Bind geometry and draw */
         VkDeviceSize vtxOffset = 0;

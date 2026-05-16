@@ -91,6 +91,7 @@ for app in [a for a in apps if a in COMMAND_LINE_TARGETS]:
     app_env.Append(CPPPATH=[
         env['SRC'],
         os.path.join(env['ROOT'], 'apps', app),  # resolves #include "shaders/shaders.h"
+        os.path.join(env['CGLM'], 'include'),
     ])
     if platform == 'mac':
         vulkan_lib_dir = os.path.join(env['VULKAN_SDK'], 'macOS', 'lib')
