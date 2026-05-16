@@ -1,4 +1,5 @@
 import os
+import sys
 
 # static variables
 platforms = [
@@ -81,19 +82,50 @@ lib = env.Library(os.path.join(env['LIB'], 'vkbase'), objs)
 installed = env.Install(os.path.join('dist', 'lib'), lib) + env.Install(os.path.join('dist', 'include'), headers)
 env.Alias(platform, installed)
 
+# shader source extensions to compile
+SHADER_EXTS = ['.vert', '.frag', '.comp', '.geom', '.tesc', '.tese']
+
 # build app targets
 for app in [a for a in apps if a in COMMAND_LINE_TARGETS]:
     app_env = env.Clone()
-    app_env.Append(CPPPATH=[env['SRC']])
+    app_env.Append(CPPPATH=[
+        env['SRC'],
+        os.path.join(env['ROOT'], 'apps', app),  # resolves #include "shaders/shaders.h"
+    ])
     if platform == 'mac':
         vulkan_lib_dir = os.path.join(env['VULKAN_SDK'], 'macOS', 'lib')
         app_env.Append(LINKFLAGS=['-Wl,-rpath,' + vulkan_lib_dir])
     app_env.Append(LINKFLAGS=native_extra_linkflags)
+
+    # --- compile GLSL shaders to SPIR-V ---
+    shader_src_dir   = os.path.join(env['ROOT'], 'apps', app, 'shaders')
+    shader_build_dir = os.path.join(env['ROOT'], 'build', 'shaders', app)
+    spv_targets = []
+    for ext in SHADER_EXTS:
+        for src in app_env.Glob(os.path.join(shader_src_dir, '*' + ext)):
+            spv_name = os.path.basename(str(src)) + '.spv'
+            spv_out  = os.path.join(shader_build_dir, spv_name)
+            spv_targets += app_env.Command(
+                spv_out, str(src),
+                '$SHADER_COMPILER -V $SOURCE -o $TARGET')
+
+    # --- generate shaders.h from all .spv outputs ---
+    shaders_h = os.path.join(shader_src_dir, 'shaders.h')
+    header = app_env.Command(
+        shaders_h, spv_targets,
+        f'"{sys.executable}" tools/spv_to_header.py -o $TARGET $SOURCES'
+    ) if spv_targets else []
+
+    # --- compile app C sources ---
     app_sources = app_env.Glob(os.path.join('apps', app, '*.c'))
     app_objs = []
     for source in app_sources:
         name, _ = os.path.splitext(os.path.split(str(source))[1])
-        app_objs.append(app_env.Object(os.path.join(env['OBJ'], 'apps', app, name + '.o'), source))
+        obj = app_env.Object(os.path.join(env['OBJ'], 'apps', app, name + '.o'), source)
+        if header:
+            app_env.Depends(obj, header)
+        app_objs.append(obj)
+
     app_exe = app_env.Program(
         os.path.join('build', 'apps', app, app),
         app_objs,

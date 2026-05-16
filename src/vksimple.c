@@ -217,6 +217,33 @@ VkRenderPassCreateInfo vkb_simpleRenderPass(uint32_t attachmentCount, VkAttachme
   return info;
 }
 
+VkImageCreateInfo vkb_simpleImage2D(VkFormat format, VkExtent2D extent, VkImageUsageFlags usage) {
+  VkImageCreateInfo info = *vkb_emptyImage();
+  info.imageType     = VK_IMAGE_TYPE_2D;
+  info.format        = format;
+  info.extent        = (VkExtent3D){extent.width, extent.height, 1};
+  info.mipLevels     = 1;
+  info.arrayLayers   = 1;
+  info.samples       = VK_SAMPLE_COUNT_1_BIT;
+  info.tiling        = VK_IMAGE_TILING_OPTIMAL;
+  info.usage         = usage;
+  info.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+  info.sharingMode   = VK_SHARING_MODE_EXCLUSIVE;
+  return info;
+}
+
+VkSamplerCreateInfo vkb_simpleSampler(VkFilter filter, VkSamplerAddressMode addressMode) {
+  VkSamplerCreateInfo info = *vkb_emptySampler();
+  info.magFilter    = filter;
+  info.minFilter    = filter;
+  info.addressModeU = addressMode;
+  info.addressModeV = addressMode;
+  info.addressModeW = addressMode;
+  info.mipmapMode   = VK_SAMPLER_MIPMAP_MODE_LINEAR;
+  info.maxLod       = 1.0f;
+  return info;
+}
+
 VkFramebufferCreateInfo vkb_simpleFramebuffer(VkRenderPass renderPass, uint32_t attachmentCount, const VkImageView *pAttachments, uint32_t width, uint32_t height, uint32_t layers) {
   VkFramebufferCreateInfo info =  *vkb_emptyFramebuffer();
   info.renderPass = renderPass;
@@ -226,5 +253,68 @@ VkFramebufferCreateInfo vkb_simpleFramebuffer(VkRenderPass renderPass, uint32_t 
   info.height = height;
   info.layers = layers;
   return info;
+}
+
+VkAttachmentDescription vkb_simpleColorAttachment(VkFormat format, VkImageLayout finalLayout) {
+  VkAttachmentDescription desc = {0};
+  desc.format         = format;
+  desc.samples        = VK_SAMPLE_COUNT_1_BIT;
+  desc.loadOp         = VK_ATTACHMENT_LOAD_OP_CLEAR;
+  desc.storeOp        = VK_ATTACHMENT_STORE_OP_STORE;
+  desc.stencilLoadOp  = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+  desc.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+  desc.initialLayout  = VK_IMAGE_LAYOUT_UNDEFINED;
+  desc.finalLayout    = finalLayout;
+  return desc;
+}
+
+VkAttachmentDescription vkb_simpleDepthAttachment(VkFormat format) {
+  VkAttachmentDescription desc = {0};
+  desc.format         = format;
+  desc.samples        = VK_SAMPLE_COUNT_1_BIT;
+  desc.loadOp         = VK_ATTACHMENT_LOAD_OP_CLEAR;
+  desc.storeOp        = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+  desc.stencilLoadOp  = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+  desc.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+  desc.initialLayout  = VK_IMAGE_LAYOUT_UNDEFINED;
+  desc.finalLayout    = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+  return desc;
+}
+
+VkAttachmentReference vkb_colorAttachmentRef(uint32_t index) {
+  VkAttachmentReference ref = {0};
+  ref.attachment = index;
+  ref.layout     = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+  return ref;
+}
+
+VkAttachmentReference vkb_depthAttachmentRef(uint32_t index) {
+  VkAttachmentReference ref = {0};
+  ref.attachment = index;
+  ref.layout     = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+  return ref;
+}
+
+VkSubpassDescription vkb_simpleGraphicsSubpass(const VkAttachmentReference *pColorRef, const VkAttachmentReference *pDepthRef) {
+  VkSubpassDescription subpass = {0};
+  subpass.pipelineBindPoint       = VK_PIPELINE_BIND_POINT_GRAPHICS;
+  subpass.colorAttachmentCount    = 1;
+  subpass.pColorAttachments       = pColorRef;
+  subpass.pDepthStencilAttachment = pDepthRef;
+  return subpass;
+}
+
+VkSubpassDependency vkb_simpleExternalDependency(void) {
+  VkSubpassDependency dep = {0};
+  dep.srcSubpass    = VK_SUBPASS_EXTERNAL;
+  dep.dstSubpass    = 0;
+  dep.srcStageMask  = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT
+                    | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
+  dep.dstStageMask  = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT
+                    | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
+  dep.srcAccessMask = 0;
+  dep.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT
+                    | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+  return dep;
 }
 

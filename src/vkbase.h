@@ -64,6 +64,11 @@ typedef struct VkbShaderImage {
   VkImageView view;
 } VkbShaderImage;
 
+typedef struct VkbTexture {
+  VkbShaderImage image;
+  VkSampler      sampler;
+} VkbTexture;
+
 typedef struct VkbQueueFamilyIndices {
   uint32_t graphicsIndex;
   uint32_t computeIndex;
@@ -119,6 +124,8 @@ extern VkResult vkb_createShaderImage(VkPhysicalDevice pd, VkDevice d, VkImageCr
 extern void vkb_destroyBuffer(VkDevice d, VkbBuffer buffer);
 extern void vkb_destroyImage(VkDevice d, VkbImage image);
 extern void vkb_destroyShaderImage(VkDevice d, VkbShaderImage image);
+extern VkResult vkb_createTexture(VkPhysicalDevice pd, VkDevice d, VkImageCreateInfo *imgInfo, VkMemoryPropertyFlags memProps, VkImageAspectFlags aspect, VkSamplerCreateInfo *samplerInfo, VkbTexture *out);
+extern void vkb_destroyTexture(VkDevice d, VkbTexture texture);
 
 /* vkempties.c */
 extern const VkInstanceCreateInfo *const vkb_emptyInstance();
@@ -185,6 +192,14 @@ extern VkPipelineColorBlendStateCreateInfo vkb_simpleColorBlendState(const VkPip
 extern VkPipelineDynamicStateCreateInfo vkb_simpleDynamicState(uint32_t dynamicStateCount, const VkDynamicState *pDynamicStates);
 extern VkRenderPassCreateInfo vkb_simpleRenderPass(uint32_t attachmentCount, VkAttachmentDescription const *pAttachments, uint32_t subpassCount, VkSubpassDescription const *pSubpasses, uint32_t dependencyCount, VkSubpassDependency const *pDependencies);
 extern VkFramebufferCreateInfo vkb_simpleFramebuffer(VkRenderPass renderPass, uint32_t attachmentCount, const VkImageView *pAttachments, uint32_t width, uint32_t height, uint32_t layers);
+extern VkImageCreateInfo vkb_simpleImage2D(VkFormat format, VkExtent2D extent, VkImageUsageFlags usage);
+extern VkSamplerCreateInfo vkb_simpleSampler(VkFilter filter, VkSamplerAddressMode addressMode);
+extern VkAttachmentDescription vkb_simpleColorAttachment(VkFormat format, VkImageLayout finalLayout);
+extern VkAttachmentDescription vkb_simpleDepthAttachment(VkFormat format);
+extern VkAttachmentReference vkb_colorAttachmentRef(uint32_t index);
+extern VkAttachmentReference vkb_depthAttachmentRef(uint32_t index);
+extern VkSubpassDescription vkb_simpleGraphicsSubpass(const VkAttachmentReference *pColorRef, const VkAttachmentReference *pDepthRef);
+extern VkSubpassDependency vkb_simpleExternalDependency(void);
 
 /* vkutil.c */
 extern size_t vkb_readFile(char *filename, char **buffer);

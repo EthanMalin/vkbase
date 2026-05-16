@@ -69,3 +69,18 @@ void vkb_destroyShaderImage(VkDevice d, VkbShaderImage image) {
   vkDestroyImageView(d, image.view, NULL);
   vkb_destroyImage(d, image.image);
 }
+
+VkResult vkb_createTexture(VkPhysicalDevice pd, VkDevice d, VkImageCreateInfo *imgInfo, VkMemoryPropertyFlags memProps, VkImageAspectFlags aspect, VkSamplerCreateInfo *samplerInfo, VkbTexture *out) {
+  VK_CHECK(vkb_createShaderImage(pd, d, imgInfo, memProps, aspect, &out->image));
+  VkResult r = vkCreateSampler(d, samplerInfo, NULL, &out->sampler);
+  if (r != VK_SUCCESS) {
+    vkb_destroyShaderImage(d, out->image);
+    return r;
+  }
+  return VK_SUCCESS;
+}
+
+void vkb_destroyTexture(VkDevice d, VkbTexture texture) {
+  vkDestroySampler(d, texture.sampler, NULL);
+  vkb_destroyShaderImage(d, texture.image);
+}
