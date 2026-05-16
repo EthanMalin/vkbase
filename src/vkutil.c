@@ -149,3 +149,51 @@ int32_t vkb_findMemoryTypeIndex(VkPhysicalDevice physicalDevice, uint32_t typeFi
   }
   return -1;
 }
+
+VkResult vkb_createBase(VkInstance instance, VkSurfaceKHR surface, VkPhysicalDevice *pdev, VkbBase *out) {
+  VkPhysicalDevice pd;
+  if (pdev != NULL && *pdev != VK_NULL_HANDLE) {
+    pd = *pdev;
+  } else {
+    VK_CHECK(vkb_pickPhysicalDevice(instance, &pd));
+  }
+
+  VkbQueueFamilyIndices qfi;
+  vkb_getQueueFamilyIndices(pd, surface, &qfi);
+  if (!qfi.hasGraphics || !qfi.hasPresent) return VK_ERROR_INITIALIZATION_FAILED;
+
+  float priority = 1.0f;
+  VkDeviceQueueCreateInfo queueInfos[2];
+  uint32_t queueCount = 1;
+
+  queueInfos[0] = *vkb_emptyDeviceQueue();
+  queueInfos[0].queueFamilyIndex = qfi.graphicsIndex;
+  queueInfos[0].queueCount       = 1;
+  queueInfos[0].pQueuePriorities = &priority;
+
+  if (qfi.presentIndex != qfi.graphicsIndex) {
+    queueInfos[1] = *vkb_emptyDeviceQueue();
+    queueInfos[1].queueFamilyIndex = qfi.presentIndex;
+    queueInfos[1].queueCount       = 1;
+    queueInfos[1].pQueuePriorities = &priority;
+    queueCount = 2;
+  }
+
+  VkDeviceCreateInfo devInfo = vkb_simpleDevice(queueCount, queueInfos);
+  VkDevice dev;
+  VK_CHECK(vkCreateDevice(pd, &devInfo, NULL, &dev));
+
+  out->inst = instance;
+  out->pdev = pd;
+  out->dev  = dev;
+  out->qfi  = qfi;
+  vkGetDeviceQueue(dev, qfi.graphicsIndex, 0, &out->gq);
+  vkGetDeviceQueue(dev, qfi.presentIndex,  0, &out->pq);
+
+  return VK_SUCCESS;
+}
+
+void vkb_destroyBase(VkbBase *base) {
+  vkDestroyDevice(base->dev, NULL);
+  memset(base, 0, sizeof(VkbBase));
+}

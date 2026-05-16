@@ -7,21 +7,40 @@ static const char *const s_instanceLayersDebug[] = {
 };
 
 #ifdef __APPLE__
+#ifdef VK_KHR_portability_enumeration
+#define VKB_NUM_INSTANCE_EXTENSIONS_DEBUG 4
+#define VKB_INSTANCE_EXTENSIONS_DEBUG s_instanceExtensionsDebug
+static const char *const s_instanceExtensionsDebug[] = {
+  VK_EXT_DEBUG_UTILS_EXTENSION_NAME,
+  "VK_KHR_surface",
+  "VK_EXT_metal_surface",
+  VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME,
+};
+
+#define VKB_NUM_INSTANCE_EXTENSIONS 3
+#define VKB_INSTANCE_EXTENSIONS s_instanceExtensions
+static const char *const s_instanceExtensions[] = {
+  "VK_KHR_surface",
+  "VK_EXT_metal_surface",
+  VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME,
+};
+#else
 #define VKB_NUM_INSTANCE_EXTENSIONS_DEBUG 3
 #define VKB_INSTANCE_EXTENSIONS_DEBUG s_instanceExtensionsDebug
 static const char *const s_instanceExtensionsDebug[] = {
   VK_EXT_DEBUG_UTILS_EXTENSION_NAME,
   "VK_KHR_surface",
-  "VK_EXT_metal_surface"
+  "VK_EXT_metal_surface",
 };
 
 #define VKB_NUM_INSTANCE_EXTENSIONS 2
 #define VKB_INSTANCE_EXTENSIONS s_instanceExtensions
 static const char *const s_instanceExtensions[] = {
   "VK_KHR_surface",
-  "VK_EXT_metal_surface"
+  "VK_EXT_metal_surface",
 };
-#endif
+#endif /* VK_KHR_portability_enumeration */
+#endif /* __APPLE__ */
 
 #ifdef _WIN32
 #define VKB_NUM_INSTANCE_EXTENSIONS_DEBUG 3
@@ -40,14 +59,34 @@ static const char *const s_instanceExtensions[] = {
 };
 #endif
 
+#if defined(__APPLE__) && defined(VK_KHR_portability_subset)
+#define VKB_NUM_DEVICE_EXTENSIONS 2
+static const char *const s_deviceExtensions[] = {
+  VK_KHR_SWAPCHAIN_EXTENSION_NAME,
+  VK_KHR_PORTABILITY_SUBSET_EXTENSION_NAME,
+};
+#else
 #define VKB_NUM_DEVICE_EXTENSIONS 1
-#define VKB_DEVICE_EXTENSIONS s_deviceExtensions
 static const char *const s_deviceExtensions[] = {
   VK_KHR_SWAPCHAIN_EXTENSION_NAME,
 };
+#endif
+#define VKB_DEVICE_EXTENSIONS s_deviceExtensions
+
+VkApplicationInfo vkb_simpleApplication(const char *pApplicationName, uint32_t applicationVersion, uint32_t apiVersion) {
+  VkApplicationInfo info = *vkb_emptyApplication();
+  info.pApplicationName = pApplicationName;
+  info.applicationVersion = applicationVersion;
+  info.apiVersion = apiVersion;
+  return info;
+}
 
 VkInstanceCreateInfo vkb_simpleInstance(VkApplicationInfo *pApplicationInfo, VkBool32 debug) {
   VkInstanceCreateInfo infoInstance =  *vkb_emptyInstance();
+
+#if defined(__APPLE__) && defined(VK_KHR_portability_enumeration)
+  infoInstance.flags = VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR;
+#endif
 
   infoInstance.pApplicationInfo = pApplicationInfo;
   if (debug) {

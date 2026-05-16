@@ -44,6 +44,9 @@
 #define VKB_MAX_SWAPCHAIN_IMAGES 8
 #define VKB_MAX_SWAPCHAIN_SURFACE_FORMATS 128
 #define VKB_MAX_SWAPCHAIN_PRESENT_MODES 4
+#define VKB_MAX_FRAMES_IN_FLIGHT 3
+
+typedef struct VkbNativeSurface VkbNativeSurface;
 
 /* --- Data types ---  */
 typedef struct VkbBuffer {
@@ -91,11 +94,21 @@ typedef struct VkbSwapchain {
 typedef struct VkbBase {
   VkInstance inst;
   VkPhysicalDevice pdev;
-  VkDevice dev;  
+  VkDevice dev;
   VkQueue gq; // graphics queue
   VkQueue pq; // present queue
   VkbQueueFamilyIndices qfi;
 } VkbBase;
+
+typedef struct VkbFrameContext {
+  VkCommandPool   cmdPool;
+  uint32_t        frameCount;
+  uint32_t        currentFrame;
+  VkCommandBuffer cmdBuffers[VKB_MAX_FRAMES_IN_FLIGHT];
+  VkSemaphore     imageAvailable[VKB_MAX_FRAMES_IN_FLIGHT];
+  VkSemaphore     renderFinished[VKB_MAX_FRAMES_IN_FLIGHT];
+  VkFence         inFlight[VKB_MAX_FRAMES_IN_FLIGHT];
+} VkbFrameContext;
 
 
 /* --- prototypes --- */
@@ -156,6 +169,7 @@ extern const VkCommandBufferBeginInfo *const vkb_emptyCommandBufferBegin();
 extern const VkRenderPassBeginInfo *const vkb_emptyRenderPassBegin();
 
 /* vksimple.c */
+extern VkApplicationInfo vkb_simpleApplication(const char *pApplicationName, uint32_t applicationVersion, uint32_t apiVersion);
 extern VkInstanceCreateInfo vkb_simpleInstance(VkApplicationInfo *pApplicationInfo, VkBool32 debug);
 extern VkDeviceCreateInfo vkb_simpleDevice(uint32_t queueCreateInfoCount, VkDeviceQueueCreateInfo *pQueueCreateInfos);
 extern VkShaderModuleCreateInfo vkb_simpleShaderModule(size_t codeSize, const uint32_t *pCode);
@@ -183,6 +197,8 @@ extern VkBool32 vkb_isPhysicalDeviceSuitable(VkPhysicalDevice physicalDevice);
 extern VkResult vkb_pickPhysicalDevice(VkInstance instance, VkPhysicalDevice *physicalDevice);
 
 extern int32_t vkb_findMemoryTypeIndex(VkPhysicalDevice physicalDevice, uint32_t typeFilter, VkMemoryPropertyFlags properties);
+extern VkResult vkb_createBase(VkInstance instance, VkSurfaceKHR surface, VkPhysicalDevice *pdev, VkbBase *out);
+extern void     vkb_destroyBase(VkbBase *base);
 
 /* vkcmd.c */
 extern void vkb_cmdTransitionImageLayout(VkCommandBuffer commandBuffer, VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout);
@@ -190,6 +206,14 @@ extern void vkb_cmdTransitionImageLayout(VkCommandBuffer commandBuffer, VkImage 
 /* vkswap.c */
 extern VkbSwapchainSupportDetails vkb_swapchainSupportDetails(VkPhysicalDevice physicalDevice, uint32_t queueFamilyIndex, VkSurfaceKHR surface);
 extern VkSwapchainCreateInfoKHR vkb_swapchainCreateInfo(VkPhysicalDevice physicalDevice, uint32_t queueFamilyIndex, VkSurfaceKHR surface, VkExtent2D window);
+extern VkResult vkb_createSwapchain(VkbBase *base, VkbNativeSurface *ns, VkFormat *requiredFormat, VkbSwapchain *out);
+extern void     vkb_destroySwapchain(VkbBase *base, VkbSwapchain *swapchain);
+
+/* vkframe.c */
+extern VkResult vkb_createFrameContext(VkbBase *base, uint32_t frameCount, VkbFrameContext *out);
+extern void     vkb_destroyFrameContext(VkbBase *base, VkbFrameContext *ctx);
+extern VkResult vkb_beginFrame(VkbBase *base, VkbFrameContext *ctx, VkbSwapchain *swapchain, uint32_t *imageIndex, VkCommandBuffer *cmd);
+extern VkResult vkb_endFrame(VkbBase *base, VkbFrameContext *ctx, VkbSwapchain *swapchain, uint32_t imageIndex);
 
 /* vkformat.c */
 extern bool vkb_isDepthFormat(VkFormat format);
